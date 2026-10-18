@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SütPazarı — Tazeliğin en doğal hali</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #121c17;
+            --card-dark: #1b2822;
+            --card-accent: #23362d;
+            --primary-green: #38a169;
+            --light-green: #a3e635;
+            --accent-yellow: #f6ad55;
+            --text-light: #f7fafc;
+            --text-muted: #a0aec0;
+            --card-hero: #e6eedb;
+            --text-hero: #1a202c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            padding-bottom: 50px;
+        }
+
+        /* Navbar */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 8%;
+            background-color: rgba(18, 28, 23, 0.95);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg-dark);
+            font-size: 20px;
+        }
+
+        .logo-text h1 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .logo-text p {
+            font-size: 10px;
+            color: var(--primary-green);
+            letter-spacing: 1px;
+        }
+
+        nav a {
+            color: var(--text-light);
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--primary-green);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-green {
+            background-color: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .btn-green:hover {
+            transform: translateY(-2px);
+            background-color: #2f855a;
+        }
+
+        /* Hero Section */
+        .container {
+            width: 84%;
+            margin: 0 auto;
+        }
+
+        .hero {
+            background-color: var(--card-hero);
+            border-radius: 28px;
+            padding: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text-hero);
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-text {
+            max-width: 50%;
+        }
+
+        .tag {
+            font-size: 12px;
+            font-weight: 700;
+            color: #4a5568;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        .hero-text h2 {
+            font-size: 48px;
+            line-height: 1.1;
+            margin-bottom: 15px;
+            color: #1a202c;
+        }
+
+        .hero-text p {
+            color: #4a5568;
+            font-size: 15px;
+            margin-bottom: 25px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-dark {
+            background-color: #2d3748;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-light-green {
+            background-color: #9ae6b4;
+            color: #1a202c;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .hero-image {
+            position: relative;
+        }
+
+        .milk-illustration {
+            font-size: 140px;
+            color: #c6f6d5;
+        }
+
+        /* Sesli Sipariş ve Konum Bölümü (Bizim Eklediğimiz Özellikler) */
+        .special-features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature-card {
+            background-color: var(--card-dark);
+            border-radius: 20px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .voice-btn {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #38a169, #48bb78);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(56, 161, 105, 0.4);
+            transition: 0.3s;
+            border: none;
+            color: white;
+        }
+
+        .voice-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* Ürünler Bölümü */
+        .section-title {
+            margin: 40px 0 20px 0;
+        }
+
+        .section-title h3 {
+            font-size: 24px;
+        }
+
+        .section-title p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background-color: var(--card-accent);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            transition: 0.3s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-img {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .product-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .product-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        .product-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--light-green);
+        }
+
+        .add-btn {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 32px;
+            height: 32px;
+            background-color: white;
+            color: var(--bg-dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: justify;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo-container">
+            <div class="logo-icon"><i class="fa-solid fa-glass-water"></i></div>
+            <div class="logo-text">
+                <h1>SütPazarı</h1>
+                <p>DOĞALLIĞIN ADRESİ</p>
+            </div>
+        </div>
+        <nav>
+            <a href="#" class="active">Ana Sayfa</a>
+            <a href="#">Ürünler</a>
+            <a href="#">Hikâyemiz</a>
+        </nav>
+        <div class="nav-actions">
+            <span><i class="fa-regular fa-user"></i> E-posta ile giriş</span>
+            <a href="#" class="btn-green">Alışverişe başla <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-text">
+                <span class="tag">• TAZE • DOĞAL • GÜVENİLİR</span>
+                <h2>İyiliği doğadan al.</h2>
+                <p>Her günün güzelliği, sofrana gelen doğal lezzetlerle başlar. Özenle seçilmiş ürünlerimizi keşfet.</p>
+                <div class="hero-buttons">
+                    <button class="btn-light-green">Ürünleri keşfet</button>
+                    <button class="btn-dark">Hikâyemizi oku</button>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="milk-illustration"><i class="fa-solid fa-cow"></i></div>
+            </div>
+        </section>
+
+        <!-- Eklediğimiz Sesli Sipariş ve Konum Özelliği -->
+        <div class="special-features">
+            <div class="feature-card">
+                <button class="voice-btn" onclick="startVoice()"><i class="fa-solid fa-microphone"></i></button>
+                <div>
+                    <h4>Sesli Sipariş Ver</h4>
+                    <p id="voice-status" style="color: var(--text-muted); font-size: 13px;">Mikrofona basıp "2 Litre Günlük Süt İstiyorum" deyin.</p>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="voice-btn" style="background: linear-gradient(135deg, #f6ad55, #dd6b20);"><i class="fa-solid fa-location-dot"></i></div>
+                <div>
+                    <h4>En Yakın Sütçü Konumu</h4>
+                    <p style="color: var(--text-muted); font-size: 13px;">Köyünüzdeki en yakın dağıtım aracını görün.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ürünler -->
+        <div class="section-title">
+            <span style="color: var(--primary-green); font-size: 12px; font-weight:700;">SENİN İÇİN SEÇTİK</span>
+            <h3>Günün taze favorileri</h3>
+            <p>Mutfağına doğallık katacak lezzetler.</p>
+        </div>
+
+        <div class="products-grid">
+            <div class="product-card">
+                <div class="product-img">🥛</div>
+                <div class="product-title">Günlük Süt</div>
+                <div class="product-desc">Yumuşak içim, doğal lezzet.</div>
+                <div class="product-price">39,90 TL</div>
+            </div>
+            <div class="product-card">
+                <div class="product-img">🥣</div>
+                <div class="product-title">Köy Yoğurdu</div>
+                <div class="product-desc">Kıvamlı, mis gibi ev yoğurdu.</div>
+                <div class="product-price">64,50 TL</div>
+            </div>
+            <div class="product-card">
+                <div class="product-img">🧀</div>
+                <div class="product-title">Ezine Beyaz Peynir</div>
+                <div class="product-desc">Kahvaltıların vazgeçilmez lezzeti.</div>
+                <div class="product-price">129,90 TL</div>
+            </div>
+            <div class="product-card">
+                <div class="product-img">🧈</div>
+                <div class="product-title">Doğal Tereyağı</div>
+                <div class="product-desc">Yoğun aromalı, geleneksel tat.</div>
+                <div class="product-price">114,00 TL</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function startVoice() {
+            const status = document.getElementById('voice-status');
+            status.innerText = "Dinleniyor... Konuşabilirsiniz.";
+            setTimeout(() => {
+                status.innerText = "Algılandı: '2 Litre Günlük Süt' Sepete Eklendi! ✅";
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
