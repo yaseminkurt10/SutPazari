@@ -7,7 +7,7 @@
     <!-- FontAwesome İkonları -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Leaflet.js Harita CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
             --bg-dark: #121c17;
@@ -135,12 +135,21 @@
             z-index: 1;
         }
 
+        /* Sesli Arama Kutusu */
         .search-box {
             position: relative;
             margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .search-box input {
+        .search-input-wrapper {
+            position: relative;
+            flex: 1;
+        }
+
+        .search-input-wrapper input {
             width: 100%;
             padding: 12px 16px 12px 42px;
             border-radius: 12px;
@@ -150,12 +159,39 @@
             font-size: 14px;
         }
 
-        .search-box i {
+        .search-input-wrapper i {
             position: absolute;
             left: 15px;
             top: 50%;
             transform: translateY(-50%);
             color: var(--primary-green);
+        }
+
+        .voice-btn {
+            background: var(--card-accent);
+            border: 1px solid rgba(56, 161, 105, 0.4);
+            color: var(--light-green);
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .voice-btn.listening {
+            background: var(--danger-red);
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
         }
 
         .card-item {
@@ -389,14 +425,20 @@
             <div class="map-card">
                 <div class="map-header">
                     <span><i class="fa-solid fa-location-crosshairs" style="color:var(--light-green);"></i> Canlı Sütçü Konum Takibi</span>
-                    <span id="live-status-badge" style="color:var(--text-muted); font-size:11px;">Konum Alınıyor...</span>
+                    <span id="live-status-badge" style="color:var(--text-muted); font-size:11px;">Harita Yüklendi</span>
                 </div>
                 <div id="map"></div>
             </div>
 
+            <!-- Sesli Arama Özellikli Arama Paneli -->
             <div class="search-box">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="search-input" oninput="filterSellers()" placeholder="Sütçü adı veya İl/İlçe ara (Örn: Diyarbakır, Ahmet)...">
+                <div class="search-input-wrapper">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="search-input" oninput="filterSellers()" placeholder="Sütçü veya İl ara (Yaz veya Konuş)...">
+                </div>
+                <button class="voice-btn" id="voice-btn" onclick="startVoiceRecognition()" title="Sesle Arama Yap">
+                    <i class="fa-solid fa-microphone"></i>
+                </button>
             </div>
 
             <h3 style="margin-bottom:12px; font-size:16px;"><i class="fa-solid fa-store" style="color:var(--primary-green);"></i> Tüm Sütçüler</h3>
@@ -516,7 +558,7 @@
         </button>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         let currentUser = {
             name: '',
@@ -576,19 +618,19 @@
             }
         ];
 
-        document.addEventListener("DOMContentLoaded", function() {
+        window.onload = function() {
             loadProfileFromStorage();
             renderSellersList(sellers);
             renderOrdersList();
-            setTimeout(initMap, 200);
-        });
+            initMap();
+        };
 
         function loadProfileFromStorage() {
             try {
                 const saved = localStorage.getItem('sutpazari_user');
                 if (saved) {
                     currentUser = JSON.parse(saved);
-                    document.getElementById('header-user-name').innerText = currentUser.name;
+                    document.getElementById('header-user-name').innerText = currentUser.name || 'Giriş Yap';
                     document.getElementById('modal-input-name').value = currentUser.name || '';
                     document.getElementById('modal-input-phone').value = currentUser.phone || '';
                     document.getElementById('modal-input-city').value = currentUser.city || 'Diyarbakır';
@@ -630,14 +672,19 @@
 
         function initMap() {
             if (map !== null) return;
+            
             try {
                 map = L.map('map').setView([37.9150, 40.2300], 13);
 
-                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-                    attribution: 'Tiles &copy; Esri',
-                    maxZoom: 18,
-                    referrerPolicy: 'strict-origin-when-cross-origin'
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                    maxZoom: 19,
+                    subdomains: 'abcd'
                 }).addTo(map);
+
+                sellers.forEach(s => {
+                    L.marker([s.lat, s.lng]).addTo(map)
+                        .bindPopup(`<b>${s.name}</b><br>Tel: ${s.phone}<br>Şehir: ${s.city}`);
+                });
 
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
@@ -646,24 +693,23 @@
                             const lng = position.coords.longitude;
                             map.setView([lat, lng], 14);
 
+                            if (userMarker) map.removeLayer(userMarker);
                             userMarker = L.marker([lat, lng]).addTo(map)
                                 .bindPopup('<b>Sizin Konumunuz</b>');
 
                             document.getElementById('live-status-badge').innerText = "Canlı Konum Aktif";
                             document.getElementById('live-status-badge').style.color = "var(--light-green)";
                         },
-                        () => {
-                            document.getElementById('live-status-badge').innerText = "Varsayılan Konum";
-                        }
+                        (err) => {
+                            document.getElementById('live-status-badge').innerText = "Varsayılan Konum (GPS Kapalı)";
+                        },
+                        { timeout: 3000, enableHighAccuracy: false }
                     );
+                } else {
+                    document.getElementById('live-status-badge').innerText = "Varsayılan Konum";
                 }
-
-                sellers.forEach(s => {
-                    L.marker([s.lat, s.lng]).addTo(map)
-                        .bindPopup(`<b>${s.name}</b><br>Tel: ${s.phone}<br>Şehir: ${s.city}`);
-                });
             } catch(err) {
-                console.error("Harita yükleme hatası:", err);
+                console.error("Harita hatası:", err);
             }
         }
 
@@ -689,6 +735,42 @@
                 return;
             }
             switchTab('tab-seller-dashboard');
+        }
+
+        /* Sesli Arama Fonksiyonu */
+        function startVoiceRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                alert("Tarayıcınız sesli aramayı desteklemiyor. Lütfen Chrome veya Safari kullanın!");
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'tr-TR';
+            recognition.interimResults = false;
+
+            const btn = document.getElementById('voice-btn');
+            btn.classList.add('listening');
+
+            recognition.start();
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('search-input').value = transcript;
+                filterSellers();
+                btn.classList.remove('listening');
+            };
+
+            recognition.onerror = function(event) {
+                console.error("Ses tanıma hatası:", event.error);
+                btn.classList.remove('listening');
+                alert("Sesiniz anlaşılamadı, lütfen tekrar deneyin.");
+            };
+
+            recognition.onend = function() {
+                btn.classList.remove('listening');
+            };
         }
 
         function filterSellers() {
@@ -872,4 +954,77 @@
                         </div>
 
                         ${o.status !== "Teslim Edildi" && o.status !== "İptal Edildi" ? `
-                            <div style="margin-top:12px; display:flex;
+                            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+                                <button class="btn-primary" style="background:var(--accent-yellow); color:#1a202c; flex:1;" onclick="startDeliveryAnimation(\${o.id})">
+                                    <i class="fa-solid fa-motorcycle"></i> Dağıtıma Çık
+                                </button>
+                                <button class="btn-success" onclick="markAsDelivered(\${o.id})">
+                                    <i class="fa-solid fa-circle-check"></i> Teslim Edildi
+                                </button>
+                                <button class="btn-danger" onclick="cancelOrder(\${o.id})">
+                                    <i class="fa-solid fa-xmark"></i> İptal Et
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+        }
+
+        function markAsDelivered(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = "Teslim Edildi";
+                alert("Sipariş başarıyla teslim edildi olarak güncellendi! 🥛✅");
+                renderOrdersList();
+            }
+        }
+
+        function cancelOrder(orderId) {
+            if (confirm("Bu siparişi iptal etmek istediğinize emin misiniz?")) {
+                const order = orders.find(o => o.id === orderId);
+                if (order) {
+                    order.status = "İptal Edildi";
+                    alert("Sipariş iptal edildi. ❌");
+                    renderOrdersList();
+                }
+            }
+        }
+
+        function startDeliveryAnimation(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) order.status = "Yolda";
+            renderOrdersList();
+
+            switchTab('tab-buyer');
+            alert("Dağıtım başlatıldı! Sütçü adrese doğru yola çıktı. 🛵");
+
+            let startLat = 37.9150;
+            let startLng = 40.2300;
+            let targetLat = 37.9250;
+            let targetLng = 40.2400;
+
+            if (sellerMarker) map.removeLayer(sellerMarker);
+
+            sellerMarker = L.marker([startLat, startLng]).addTo(map)
+                .bindPopup('<b>Sütçü Yolda! 🛵</b>').openPopup();
+
+            let steps = 0;
+            if (animationInterval) clearInterval(animationInterval);
+
+            animationInterval = setInterval(() => {
+                steps++;
+                let currentLat = startLat + (targetLat - startLat) * (steps / 50);
+                let currentLng = startLng + (targetLng - startLng) * (steps / 50);
+
+                sellerMarker.setLatLng([currentLat, currentLng]);
+
+                if (steps >= 50) {
+                    clearInterval(animationInterval);
+                    sellerMarker.bindPopup('<b>Sütçü Kapıda! 🥛</b>').openPopup();
+                }
+            }, 300);
+        }
+    </script>
+</body>
+</html>
