@@ -34,7 +34,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            padding-bottom: 70px; /* Alt Navigasyon için alan */
+            padding-bottom: 70px;
         }
 
         /* Üst Header */
@@ -95,7 +95,6 @@
             gap: 6px;
         }
 
-        /* Ana Konteyner */
         .container {
             width: 92%;
             max-width: 700px;
@@ -103,7 +102,6 @@
             flex: 1;
         }
 
-        /* Sekmeler (Tab Content) */
         .tab-content {
             display: none;
         }
@@ -138,6 +136,30 @@
             z-index: 1;
         }
 
+        /* Arama Paneli */
+        .search-box {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 42px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: var(--card-dark);
+            color: white;
+            font-size: 14px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-green);
+        }
+
         /* Kart Yapısı */
         .card-item {
             background: var(--card-dark);
@@ -146,10 +168,6 @@
             margin-bottom: 15px;
             border: 1px solid rgba(255, 255, 255, 0.05);
             transition: transform 0.2s, border-color 0.2s;
-        }
-
-        .card-item:hover {
-            border-color: rgba(56, 161, 105, 0.5);
         }
 
         .phone-badge {
@@ -176,6 +194,15 @@
             margin-left: 6px;
         }
 
+        .city-badge {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
         .rating-stars {
             color: var(--accent-yellow);
             font-size: 13px;
@@ -197,11 +224,34 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            transition: background 0.2s;
         }
 
-        .btn-primary:hover {
-            background: #2f855a;
+        .btn-danger {
+            background: var(--danger-red);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-success {
+            background: #2b6cb0;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .btn-sms {
@@ -216,10 +266,8 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            cursor: pointer;
         }
 
-        /* Ürün Izgarası */
         .product-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -238,7 +286,6 @@
             justify-content: space-between;
         }
 
-        /* Modal (Açılır Pencere) */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -264,7 +311,6 @@
             max-width: 420px;
             padding: 25px;
             border: 1px solid rgba(56, 161, 105, 0.4);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
         }
 
         .form-group {
@@ -288,7 +334,6 @@
             font-size: 14px;
         }
 
-        /* Alt Sabit Navigasyon Barı */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -341,7 +386,6 @@
         </button>
     </header>
 
-    <!-- Ana Konteyner -->
     <div class="container">
 
         <!-- 1. SEKME: ALICI PANENİ & SÜTÇÜ LİSTESİ -->
@@ -356,11 +400,17 @@
                 <div id="map"></div>
             </div>
 
-            <h3 style="margin-bottom:12px; font-size:16px;"><i class="fa-solid fa-store" style="color:var(--primary-green);"></i> Yakındaki Sütçüler</h3>
+            <!-- Sütçü & İl Arama Paneli -->
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="search-input" onkeyup="filterSellers()" placeholder="Sütçü adı veya İl/İlçe ara (Örn: Diyarbakır, Ahmet)...">
+            </div>
+
+            <h3 style="margin-bottom:12px; font-size:16px;"><i class="fa-solid fa-store" style="color:var(--primary-green);"></i> Tüm Sütçüler</h3>
             <div id="sellers-list"></div>
         </div>
 
-        <!-- 2. SEKME: SATICI DETAY SAYFASI (ALICI İÇİN) -->
+        <!-- 2. SEKME: SATICI DETAY SAYFASI -->
         <div id="tab-seller-detail" class="tab-content">
             <button onclick="switchTab('tab-buyer')" style="background:none; border:none; color:var(--text-muted); cursor:pointer; margin-bottom:15px; font-size:13px; display:flex; align-items:center; gap:6px;">
                 <i class="fa-solid fa-arrow-left"></i> Sütçülere Dön
@@ -368,7 +418,6 @@
 
             <div id="seller-detail-content"></div>
 
-            <!-- Yıldızlı Yorum Formu -->
             <div style="background: var(--card-dark); padding:20px; border-radius:18px; margin-top:20px; border:1px solid rgba(255,255,255,0.05);">
                 <h4 style="margin-bottom:10px; font-size:15px;"><i class="fa-solid fa-star" style="color:var(--accent-yellow);"></i> Satıcıyı Değerlendir</h4>
                 <div class="form-group">
@@ -442,6 +491,11 @@
             </div>
 
             <div class="form-group">
+                <label>Bulunduğunuz İl / İlçe</label>
+                <input type="text" id="modal-input-city" placeholder="Örn: Diyarbakır / Kayapınar">
+            </div>
+
+            <div class="form-group">
                 <label>Rolünüz</label>
                 <select id="modal-input-role">
                     <option value="buyer">Süt Alıcısı (Müşteri)</option>
@@ -472,10 +526,10 @@
     <!-- Leaflet Harita JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script>
-        // Uygulama Durumu (State)
         let currentUser = {
             name: '',
             phone: '',
+            city: 'Diyarbakır',
             role: 'buyer'
         };
 
@@ -485,12 +539,12 @@
         let userMarker = null;
         let animationInterval = null;
 
-        // Örnek Satıcı Veritabanı
         let sellers = [
             {
                 id: 1,
                 name: "Ahmet Sütçü (Köy Sütçüsü)",
                 phone: "0532 111 22 33",
+                city: "Diyarbakır / Kayapınar",
                 rating: 4.9,
                 lat: 37.9150,
                 lng: 40.2300,
@@ -506,6 +560,7 @@
                 id: 2,
                 name: "Mehmet Dağıtım",
                 phone: "0544 888 77 66",
+                city: "Diyarbakır / Bağlar",
                 rating: 4.7,
                 lat: 37.9200,
                 lng: 40.2200,
@@ -519,15 +574,23 @@
             }
         ];
 
-        // Sayfa Yüklendiğinde
+        let orders = [
+            {
+                id: 501,
+                customerName: "Mehmet Yılmaz",
+                phone: "0544 999 88 77",
+                product: "2 Litre Günlük Süt",
+                status: "Bekliyor" // "Bekliyor", "Yolda", "Teslim Edildi", "İptal Edildi"
+            }
+        ];
+
         window.onload = function() {
             loadProfileFromStorage();
             initMap();
-            renderSellersList();
+            renderSellersList(sellers);
             renderOrdersList();
         };
 
-        // Profil Yükleme
         function loadProfileFromStorage() {
             const saved = localStorage.getItem('sutpazari_user');
             if (saved) {
@@ -535,6 +598,7 @@
                 document.getElementById('header-user-name').innerText = currentUser.name;
                 document.getElementById('modal-input-name').value = currentUser.name;
                 document.getElementById('modal-input-phone').value = currentUser.phone;
+                document.getElementById('modal-input-city').value = currentUser.city || 'Diyarbakır';
                 document.getElementById('modal-input-role').value = currentUser.role;
             } else {
                 openProfileModal();
@@ -548,6 +612,7 @@
         function saveProfile() {
             const name = document.getElementById('modal-input-name').value.trim();
             const phone = document.getElementById('modal-input-phone').value.trim();
+            const city = document.getElementById('modal-input-city').value.trim();
             const role = document.getElementById('modal-input-role').value;
 
             if (!name || !phone) {
@@ -555,7 +620,7 @@
                 return;
             }
 
-            currentUser = { name, phone, role };
+            currentUser = { name, phone, city: city || 'Diyarbakır', role };
             localStorage.setItem('sutpazari_user', JSON.stringify(currentUser));
             document.getElementById('header-user-name').innerText = name;
             document.getElementById('profile-modal').classList.remove('active');
@@ -567,18 +632,15 @@
             }
         }
 
-        // Harita Başlatma (403 Hata Korumalı Esri & CartoDB Katmanları)
         function initMap() {
             map = L.map('map').setView([37.9150, 40.2300], 13);
 
-            // Esri World Street Map (403 Verme Riski Yoktur)
             L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
                 attribution: 'Tiles &copy; Esri',
                 maxZoom: 18,
                 referrerPolicy: 'strict-origin-when-cross-origin'
             }).addTo(map);
 
-            // Kullanıcı Konumu İsteği
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
@@ -598,14 +660,12 @@
                 );
             }
 
-            // Satıcı Simgelerini Haritaya Ekle
             sellers.forEach(s => {
                 L.marker([s.lat, s.lng]).addTo(map)
-                    .bindPopup(`<b>${s.name}</b><br>Tel: ${s.phone}<br>⭐ ${s.rating}`);
+                    .bindPopup(`<b>${s.name}</b><br>Tel: ${s.phone}<br>Şehir: ${s.city}`);
             });
         }
 
-        // Sekme Değiştirme
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -630,12 +690,26 @@
             switchTab('tab-seller-dashboard');
         }
 
-        // Satıcı Listesini Ekrana Basma
-        function renderSellersList() {
+        /* Arama & Filtreleme */
+        function filterSellers() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filtered = sellers.filter(s => 
+                s.name.toLowerCase().includes(query) || 
+                s.city.toLowerCase().includes(query)
+            );
+            renderSellersList(filtered);
+        }
+
+        function renderSellersList(listToRender) {
             const container = document.getElementById('sellers-list');
             container.innerHTML = '';
 
-            sellers.forEach(s => {
+            if (listToRender.length === 0) {
+                container.innerHTML = '<p style="font-size:13px; color:var(--text-muted); text-align:center; padding:20px;">Aradığınız il veya isimde sütçü bulunamadı.</p>';
+                return;
+            }
+
+            listToRender.forEach(s => {
                 let totalStock = s.products.reduce((acc, p) => acc + p.stock, 0);
 
                 container.innerHTML += `
@@ -645,7 +719,8 @@
                                 <h3 style="font-size:16px;">${s.name}</h3>
                                 <div class="rating-stars">⭐ ${s.rating} / 5 (${s.reviews.length} Değerlendirme)</div>
                                 <span class="phone-badge"><i class="fa-solid fa-phone"></i> ${s.phone}</span>
-                                <span class="stock-badge"><i class="fa-solid fa-cubes"></i> Toplam Stok: ${totalStock} Litre/Kg</span>
+                                <span class="city-badge"><i class="fa-solid fa-location-dot"></i> ${s.city}</span>
+                                <span class="stock-badge"><i class="fa-solid fa-cubes"></i> Stok: ${totalStock} Litre/Kg</span>
                             </div>
                             <i class="fa-solid fa-chevron-right" style="color:var(--text-muted); margin-top:10px;"></i>
                         </div>
@@ -654,7 +729,6 @@
             });
         }
 
-        // Satıcı Detay Profili Açma
         function openSellerDetail(sellerId) {
             activeSellerDetailId = sellerId;
             const seller = sellers.find(s => s.id === sellerId);
@@ -688,6 +762,7 @@
                 <div class="card-item" style="border-color:var(--primary-green);">
                     <h2 style="font-size:18px;">${seller.name}</h2>
                     <span class="phone-badge" style="margin-top:8px;"><i class="fa-solid fa-phone"></i> ${seller.phone}</span>
+                    <span class="city-badge"><i class="fa-solid fa-location-dot"></i> ${seller.city}</span>
                     <div class="rating-stars" style="margin-top:6px;">⭐ Ortalama Puan: ${seller.rating} / 5</div>
                 </div>
 
@@ -701,7 +776,6 @@
             switchTab('tab-seller-detail');
         }
 
-        // Değerlendirme Gönderme
         function submitReview() {
             if (!activeSellerDetailId) return;
             const seller = sellers.find(s => s.id === activeSellerDetailId);
@@ -724,7 +798,6 @@
             openSellerDetail(activeSellerDetailId);
         }
 
-        // Satıcı Tarafı: Yeni Ürün Ekleme
         function addNewProduct() {
             const name = document.getElementById('new-prod-name').value.trim();
             const price = parseFloat(document.getElementById('new-prod-price').value);
@@ -736,7 +809,6 @@
                 return;
             }
 
-            // Varsayılan Satıcıya Ürün Ekle
             sellers[0].products.push({
                 id: Date.now(),
                 name: name,
@@ -752,7 +824,7 @@
 
             alert("Yeni ürün kataloğunuza başarıyla eklendi! ✅");
             renderSellerMyProducts();
-            renderSellersList();
+            renderSellersList(sellers);
         }
 
         function renderSellerMyProducts() {
@@ -773,59 +845,79 @@
             });
         }
 
-        // Satıcı Tarafı: Müşteri Siparişleri ve Canlı Dağıtım
+        /* Sipariş İptali ve Teslim Edildi İşlemleri */
         function renderOrdersList() {
             const container = document.getElementById('buyers-orders-list');
-            container.innerHTML = `
-                <div class="card-item">
-                    <div>
-                        <h3 style="font-size:15px;">Mehmet Yılmaz</h3>
-                        <p style="font-size:12px; color:var(--light-green); margin:4px 0;">Sipariş: 2 Litre Günlük Süt</p>
-                        <span class="phone-badge"><i class="fa-solid fa-phone"></i> 0544 999 88 77</span>
+            container.innerHTML = '';
+
+            orders.forEach(o => {
+                let statusBadge = `<span style="color:var(--accent-yellow); font-size:12px; font-weight:bold;">${o.status}</span>`;
+                if (o.status === "Teslim Edildi") {
+                    statusBadge = `<span style="color:var(--light-green); font-size:12px; font-weight:bold;">✅ Teslim Edildi 🥛</span>`;
+                } else if (o.status === "İptal Edildi") {
+                    statusBadge = `<span style="color:var(--danger-red); font-size:12px; font-weight:bold;">❌ İptal Edildi</span>`;
+                }
+
+                container.innerHTML += `
+                    <div class="card-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <h3 style="font-size:15px;">${o.customerName}</h3>
+                                <p style="font-size:12px; color:var(--light-green); margin:4px 0;">Sipariş: ${o.product}</p>
+                                <span class="phone-badge"><i class="fa-solid fa-phone"></i> ${o.phone}</span>
+                            </div>
+                            <div>${statusBadge}</div>
+                        </div>
+
+                        ${o.status !== "Teslim Edildi" && o.status !== "İptal Edildi" ? `
+                            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+                                <button class="btn-primary" style="background:var(--accent-yellow); color:#1a202c; flex:1;" onclick="startDeliveryAnimation(\${o.id})">
+                                    <i class="fa-solid fa-motorcycle"></i> Dağıtıma Çık
+                                </button>
+                                <button class="btn-success" onclick="markAsDelivered(\${o.id})">
+                                    <i class="fa-solid fa-circle-check"></i> Teslim Edildi
+                                </button>
+                                <button class="btn-danger" onclick="cancelOrder(\${o.id})">
+                                    <i class="fa-solid fa-xmark"></i> İptal Et
+                                </button>
+                            </div>
+                        ` : ''}
                     </div>
-                    <div style="margin-top:12px; display:flex; gap:8px;">
-                        <button class="btn-primary" style="background:var(--accent-yellow); color:#1a202c;" onclick="startDeliveryAnimation()">
-                            <i class="fa-solid fa-motorcycle"></i> Canlı Dağıtıma Başla
-                        </button>
-                        <a href="sms:05449998877?body=SütPazarı: Siparişiniz yola çıktı, kapıda olunuz!" class="btn-sms">
-                            <i class="fa-solid fa-comment-sms"></i> SMS
-                        </a>
-                    </div>
-                </div>
-            `;
+                `;
+            });
         }
 
-        // Canlı Dağıtım Harita Animasyonu
-        function startDeliveryAnimation() {
+        function markAsDelivered(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = "Teslim Edildi";
+                alert("Sipariş başarıyla teslim edildi olarak güncellendi! 🥛✅");
+                renderOrdersList();
+            }
+        }
+
+        function cancelOrder(orderId) {
+            if (confirm("Bu siparişi iptal etmek istediğinize emin misiniz?")) {
+                const order = orders.find(o => o.id === orderId);
+                if (order) {
+                    order.status = "İptal Edildi";
+                    alert("Sipariş iptal edildi. ❌");
+                    renderOrdersList();
+                }
+            }
+        }
+
+        function startDeliveryAnimation(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) order.status = "Yolda";
+            renderOrdersList();
+
             switchTab('tab-buyer');
-            alert("Dağıtım başlatıldı! Harita üzerinde sütçü canlı olarak adrese ilerliyor. 🛵");
+            alert("Dağıtım başlatıldı! Sütçü adrese doğru yola çıktı. 🛵");
 
             let startLat = 37.9150;
             let startLng = 40.2300;
             let targetLat = 37.9250;
             let targetLng = 40.2400;
 
-            if (sellerMarker) map.removeLayer(sellerMarker);
-
-            sellerMarker = L.marker([startLat, startLng]).addTo(map)
-                .bindPopup('<b>Sütçü Yolda! 🛵</b>').openPopup();
-
-            let steps = 0;
-            if (animationInterval) clearInterval(animationInterval);
-
-            animationInterval = setInterval(() => {
-                steps++;
-                let currentLat = startLat + (targetLat - startLat) * (steps / 50);
-                let currentLng = startLng + (targetLng - startLng) * (steps / 50);
-
-                sellerMarker.setLatLng([currentLat, currentLng]);
-
-                if (steps >= 50) {
-                    clearInterval(animationInterval);
-                    sellerMarker.bindPopup('<b>Sütçü Kapıda! 🥛</b>').openPopup();
-                }
-            }, 300);
-        }
-    </script>
-</body>
-</html>
+            if (sellerMarker) map
