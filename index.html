@@ -136,64 +136,6 @@
             background: #121c17;
         }
 
-        .search-box {
-            position: relative;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .search-input-wrapper {
-            position: relative;
-            flex: 1;
-        }
-
-        .search-input-wrapper input {
-            width: 100%;
-            padding: 12px 16px 12px 42px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: var(--card-dark);
-            color: white;
-            font-size: 14px;
-        }
-
-        .search-input-wrapper i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--primary-green);
-        }
-
-        .voice-btn {
-            background: var(--card-accent);
-            border: 1px solid rgba(56, 161, 105, 0.4);
-            color: var(--light-green);
-            width: 45px;
-            height: 45px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.2s;
-        }
-
-        .voice-btn.listening {
-            background: var(--danger-red);
-            color: white;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.08); }
-            100% { transform: scale(1); }
-        }
-
         .card-item {
             background: var(--card-dark);
             border-radius: 18px;
@@ -419,7 +361,7 @@
 
     <div class="container">
 
-        <!-- 1. SEKME: ALICI PANENİ & SÜTÇÜ LİSTESİ -->
+        <!-- 1. SEKME: ALICI PANELI & SÜTÇÜ LİSTESİ -->
         <div id="tab-buyer" class="tab-content active">
             
             <div class="map-card">
@@ -430,18 +372,7 @@
                 <div id="map"></div>
             </div>
 
-            <!-- Sesli Arama Özellikli Arama Paneli -->
-            <div class="search-box">
-                <div class="search-input-wrapper">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="search-input" oninput="filterSellers()" placeholder="Sütçü veya İl ara (Yaz veya Konuş)...">
-                </div>
-                <button class="voice-btn" id="voice-btn" onclick="startVoiceRecognition()" title="Sesle Arama Yap">
-                    <i class="fa-solid fa-microphone"></i>
-                </button>
-            </div>
-
-            <h3 style="margin-bottom:12px; font-size:16px;"><i class="fa-solid fa-store" style="color:var(--primary-green);"></i> Tüm Sütçüler</h3>
+            <h3 style="margin-bottom:12px; font-size:16px;"><i class="fa-solid fa-store" style="color:var(--primary-green);"></i> Bulunduğunuz İldeki Tüm Sütçüler</h3>
             <div id="sellers-list"></div>
         </div>
 
@@ -622,7 +553,7 @@
             loadProfileFromStorage();
             renderSellersList(sellers);
             renderOrdersList();
-            setTimeout(initMap, 500);
+            setTimeout(initMap, 300);
         });
 
         function loadProfileFromStorage() {
@@ -682,4 +613,284 @@
                     zoomControl: false
                 });
 
-                L.tileLayer
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 18,
+                    attribution: 'OpenStreetMap'
+                }).addTo(map);
+
+                sellers.forEach(s => {
+                    L.marker([s.lat, s.lng]).addTo(map)
+                        .bindPopup(`<b>${s.name}</b><br>Tel: ${s.phone}<br>Şehir: ${s.city}`);
+                });
+            } catch(err) {
+                console.log("Harita hatası:", err);
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+
+            if (tabId === 'tab-buyer') {
+                document.getElementById('nav-buyer').classList.add('active');
+                if (map) setTimeout(() => map.invalidateSize(), 200);
+            } else if (tabId === 'tab-seller-dashboard') {
+                document.getElementById('nav-seller').classList.add('active');
+                renderSellerMyProducts();
+            }
+        }
+
+        function handleSellerTabClick() {
+            if (currentUser.role !== 'seller') {
+                alert("Satıcı paneline erişmek için profil ayarlarından rolünüzü 'Süt Satıcısı' yapın!");
+                openProfileModal();
+                return;
+            }
+            switchTab('tab-seller-dashboard');
+        }
+
+        function renderSellersList(listToRender) {
+            const container = document.getElementById('sellers-list');
+            if (!container) return;
+            container.innerHTML = '';
+
+            listToRender.forEach(s => {
+                let totalStock = s.products.reduce((acc, p) => acc + p.stock, 0);
+
+                container.innerHTML += `
+                    <div class="card-item" onclick="openSellerDetail(${s.id})">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <div>
+                                <h3 style="font-size:16px;">${s.name}</h3>
+                                <div class="rating-stars">⭐ ${s.rating} / 5 (${s.reviews.length} Değerlendirme)</div>
+                                <span class="phone-badge"><i class="fa-solid fa-phone"></i> ${s.phone}</span>
+                                <span class="city-badge"><i class="fa-solid fa-location-dot"></i> ${s.city}</span>
+                                <span class="stock-badge"><i class="fa-solid fa-cubes"></i> Stok: ${totalStock} Litre/Kg</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right" style="color:var(--text-muted); margin-top:10px;"></i>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function openSellerDetail(sellerId) {
+            activeSellerDetailId = sellerId;
+            const seller = sellers.find(s => s.id === sellerId);
+            const container = document.getElementById('seller-detail-content');
+
+            let productsHtml = seller.products.map(p => `
+                <div class="product-card">
+                    <div>
+                        <h4 style="color:var(--light-green); font-size:15px;">${p.name}</h4>
+                        <p style="font-size:12px; color:var(--text-muted); margin:4px 0;">${p.desc}</p>
+                        <div style="font-weight:bold; font-size:16px; margin:6px 0; color:white;">${p.price} TL</div>
+                        <span class="stock-badge" style="margin-bottom:10px; display:inline-block;">Kalan Stok: ${p.stock}</span>
+                    </div>
+                    <a href="sms:${seller.phone}?body=${encodeURIComponent('Merhaba ' + seller.name + ', ' + p.name + ' siparişi vermek istiyorum. Adım: ' + currentUser.name + ' Tel: ' + currentUser.phone)}" class="btn-sms" style="justify-content:center; width:100%;">
+                        <i class="fa-solid fa-comment-sms"></i> SMS Sipariş Ver
+                    </a>
+                </div>
+            `).join('');
+
+            let reviewsHtml = seller.reviews.map(r => `
+                <div style="background:var(--bg-dark); padding:10px 14px; border-radius:10px; margin-top:8px; border:1px solid rgba(255,255,255,0.05);">
+                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+                        <strong>${r.reviewer}</strong>
+                        <span>${r.stars}</span>
+                    </div>
+                    <p style="font-size:12px; color:var(--text-muted);">${r.comment}</p>
+                </div>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="card-item" style="border-color:var(--primary-green);">
+                    <h2 style="font-size:18px;">${seller.name}</h2>
+                    <span class="phone-badge" style="margin-top:8px;"><i class="fa-solid fa-phone"></i> ${seller.phone}</span>
+                    <span class="city-badge"><i class="fa-solid fa-location-dot"></i> ${seller.city}</span>
+                    <div class="rating-stars" style="margin-top:6px;">⭐ Ortalama Puan: ${seller.rating} / 5</div>
+                </div>
+
+                <h3 style="margin-top:15px; font-size:15px;">Satıştaki Ürünler & Fiyatlar</h3>
+                <div class="product-grid">${productsHtml}</div>
+
+                <h3 style="margin-top:20px; font-size:15px;">Müşteri Değerlendirmeleri</h3>
+                <div>${reviewsHtml.length ? reviewsHtml : '<p style="font-size:12px; color:var(--text-muted);">Henüz değerlendirme yapılmamış.</p>'}</div>
+            `;
+
+            switchTab('tab-seller-detail');
+        }
+
+        function submitReview() {
+            if (!activeSellerDetailId) return;
+            const seller = sellers.find(s => s.id === activeSellerDetailId);
+            const ratingVal = parseInt(document.getElementById('eval-rating').value);
+            const commentVal = document.getElementById('eval-comment').value.trim();
+
+            if (!commentVal) {
+                alert("Lütfen bir yorum metni yazın!");
+                return;
+            }
+
+            seller.reviews.push({
+                reviewer: currentUser.name || "Anonim Alıcı",
+                stars: "⭐".repeat(ratingVal),
+                comment: commentVal
+            });
+
+            document.getElementById('eval-comment').value = '';
+            alert("Değerlendirmeniz başarıyla eklendi! ⭐");
+            openSellerDetail(activeSellerDetailId);
+        }
+
+        function addNewProduct() {
+            const name = document.getElementById('new-prod-name').value.trim();
+            const price = parseFloat(document.getElementById('new-prod-price').value);
+            const stock = parseInt(document.getElementById('new-prod-stock').value);
+            const desc = document.getElementById('new-prod-desc').value.trim();
+
+            if (!name || isNaN(price) || isNaN(stock)) {
+                alert("Lütfen Ürün Adı, Fiyatı ve Stok Miktarını eksiksiz girin!");
+                return;
+            }
+
+            sellers[0].products.push({
+                id: Date.now(),
+                name: name,
+                price: price,
+                stock: stock,
+                desc: desc || "Taze köy ürünü"
+            });
+
+            document.getElementById('new-prod-name').value = '';
+            document.getElementById('new-prod-price').value = '';
+            document.getElementById('new-prod-stock').value = '';
+            document.getElementById('new-prod-desc').value = '';
+
+            alert("Yeni ürün kataloğunuza başarıyla eklendi! ✅");
+            renderSellerMyProducts();
+            renderSellersList(sellers);
+        }
+
+        function renderSellerMyProducts() {
+            const container = document.getElementById('seller-my-products');
+            if (!container) return;
+            container.innerHTML = '';
+
+            sellers[0].products.forEach(p => {
+                container.innerHTML += `
+                    <div class="product-card">
+                        <div>
+                            <h4 style="color:var(--light-green); font-size:14px;">${p.name}</h4>
+                            <p style="font-size:11px; color:var(--text-muted); margin:4px 0;">${p.desc}</p>
+                            <div style="font-weight:bold; font-size:15px; color:white;">${p.price} TL</div>
+                        </div>
+                        <span class="stock-badge" style="margin-top:8px;">Stok: ${p.stock} Litre/Kg</span>
+                    </div>
+                `;
+            });
+        }
+
+        function renderOrdersList() {
+            const container = document.getElementById('buyers-orders-list');
+            if (!container) return;
+            container.innerHTML = '';
+
+            orders.forEach(o => {
+                let statusBadge = `<span style="color:var(--accent-yellow); font-size:12px; font-weight:bold;">${o.status}</span>`;
+                if (o.status === "Teslim Edildi") {
+                    statusBadge = `<span style="color:var(--light-green); font-size:12px; font-weight:bold;">✅ Teslim Edildi 🥛</span>`;
+                } else if (o.status === "İptal Edildi") {
+                    statusBadge = `<span style="color:var(--danger-red); font-size:12px; font-weight:bold;">❌ İptal Edildi</span>`;
+                }
+
+                container.innerHTML += `
+                    <div class="card-item">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <h3 style="font-size:15px;">${o.customerName}</h3>
+                                <p style="font-size:12px; color:var(--light-green); margin:4px 0;">Sipariş: ${o.product}</p>
+                                <span class="phone-badge"><i class="fa-solid fa-phone"></i> ${o.phone}</span>
+                            </div>
+                            <div>${statusBadge}</div>
+                        </div>
+
+                        ${o.status !== "Teslim Edildi" && o.status !== "İptal Edildi" ? `
+                            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+                                <button class="btn-primary" style="background:var(--accent-yellow); color:#1a202c; flex:1;" onclick="startDeliveryAnimation(\${o.id})">
+                                    <i class="fa-solid fa-motorcycle"></i> Dağıtıma Çık
+                                </button>
+                                <button class="btn-success" onclick="markAsDelivered(\${o.id})">
+                                    <i class="fa-solid fa-circle-check"></i> Teslim Edildi
+                                </button>
+                                <button class="btn-danger" onclick="cancelOrder(\${o.id})">
+                                    <i class="fa-solid fa-xmark"></i> İptal Et
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+        }
+
+        function markAsDelivered(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = "Teslim Edildi";
+                alert("Sipariş başarıyla teslim edildi olarak güncellendi! 🥛✅");
+                renderOrdersList();
+            }
+        }
+
+        function cancelOrder(orderId) {
+            if (confirm("Bu siparişi iptal etmek istediğinize emin misiniz?")) {
+                const order = orders.find(o => o.id === orderId);
+                if (order) {
+                    order.status = "İptal Edildi";
+                    alert("Sipariş iptal edildi. ❌");
+                    renderOrdersList();
+                }
+            }
+        }
+
+        function startDeliveryAnimation(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) order.status = "Yolda";
+            renderOrdersList();
+
+            switchTab('tab-buyer');
+            alert("Dağıtım başlatıldı! Sütçü adrese doğru yola çıktı. 🛵");
+
+            let startLat = 37.9150;
+            let startLng = 40.2300;
+            let targetLat = 37.9250;
+            let targetLng =40.2400;
+
+            if (sellerMarker && map) map.removeLayer(sellerMarker);
+
+            if (map) {
+                sellerMarker = L.marker([startLat, startLng]).addTo(map)
+                    .bindPopup('<b>Sütçü Yolda! 🛵</b>').openPopup();
+
+                let steps = 0;
+                if (animationInterval) clearInterval(animationInterval);
+
+                animationInterval = setInterval(() => {
+                    steps++;
+                    let currentLat = startLat + (targetLat - startLat) * (steps / 50);
+                    let currentLng = startLng + (targetLng - startLng) * (steps / 50);
+
+                    sellerMarker.setLatLng([currentLat, currentLng]);
+
+                    if (steps >= 50) {
+                        clearInterval(animationInterval);
+                        sellerMarker.bindPopup('<b>Sütçü Kapıda! 🥛</b>').openPopup();
+                    }
+                }, 300);
+            }
+        }
+    </script>
+</body>
+</html>
