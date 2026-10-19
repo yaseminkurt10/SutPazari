@@ -338,3 +338,223 @@
                 </div>
                 <input type="text" id="new-prod-desc" placeholder="Açıklama (Örn: Taze inek sütü, 1 Litre)" style="margin-top:10px; width:100%; padding:10px; border-radius:10px; background:var(--bg-dark); border:1px solid rgba(255,255,255,0.1); color:white;">
                 <button class="btn-primary" style="margin-top:12px; padding:10px;" onclick="addNewProduct()"><i class="fa-solid fa-plus"></i> Ürünü Kataloğa Ekle</button>
+            </div>
+
+            <h3>Katalogdaki Ürünleriniz</h3>
+            <div id="seller-my-products" class="product-grid"></div>
+
+            <h3 style="margin-top:25px; margin-bottom:12px;">Müşteri Siparişleri</h3>
+            <div id="buyers-list">
+                <div class="card-item" style="cursor:default;">
+                    <div>
+                        <h3>Mehmet Yılmaz</h3>
+                        <p style="font-size:12px; color:var(--light-green);">Sipariş: 2 Litre Günlük Süt</p>
+                        <span class="phone-badge"><i class="fa-solid fa-phone"></i> 0544 999 88 77</span>
+                    </div>
+                    <a href="sms:05449998877?body=SütPazarı: Siparişiniz yola çıktı, kapıda olunuz!" class="btn-sms" style="background:var(--accent-yellow); color:#1a202c;">
+                        <i class="fa-solid fa-truck"></i> Yola Çıktım SMS
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let userData = { name: '', phone: '', role: '' };
+        let activeSellerId = null;
+
+        // Örnek Veritabanı
+        let sellers = [
+            {
+                id: 1,
+                name: "Ahmet Sütçü (Köy Sütçüsü)",
+                phone: "0532 111 22 33",
+                rating: 4.9,
+                products: [
+                    { name: "Günlük İnek Sütü (1L)", price: 40, desc: "Çiğ, taze, tam yağlı." },
+                    { name: "Köy Yoğurdu (2kg)", price: 75, desc: "Süzme taş gibi ev yoğurdu." }
+                ],
+                reviews: [
+                    { reviewer: "Mehmet K.", stars: "⭐⭐⭐⭐⭐", comment: "Süt harika, kaymağı çok bol çıktı!" }
+                ]
+            },
+            {
+                id: 2,
+                name: "Mehmet Dağıtım",
+                phone: "0544 888 77 66",
+                rating: 4.7,
+                products: [
+                    { name: "Doğal Yayık Tereyağı (500g)", price: 130, desc: "Köy tereyağı lezzeti." },
+                    { name: "Ezine Peynir (500g)", price: 140, desc: "Tam yağlı olgunlaştırılmış." }
+                ],
+                reviews: [
+                    { reviewer: "Ayşe T.", stars: "⭐⭐⭐⭐⭐", comment: "Tereyağı kokusu muazzam." }
+                ]
+            }
+        ];
+
+        function goToStep2() {
+            const name = document.getElementById('input-name').value.trim();
+            const phone = document.getElementById('input-phone').value.trim();
+
+            if (!name || !phone) {
+                alert("Lütfen Ad Soyad ve Telefon numaranızı girin!");
+                return;
+            }
+
+            userData.name = name;
+            userData.phone = phone;
+
+            const nav = document.getElementById('user-nav');
+            nav.style.display = 'block';
+            nav.innerHTML = `<i class="fa-solid fa-user"></i> ${name} (${phone})`;
+
+            showScreen('step-2');
+        }
+
+        function selectRole(role) {
+            userData.role = role;
+            if (role === 'buyer') {
+                renderSellersList();
+                showScreen('step-3-buyer');
+            } else {
+                renderSellerMyProducts();
+                showScreen('step-3-seller');
+            }
+        }
+
+        function renderSellersList() {
+            const list = document.getElementById('sellers-list');
+            list.innerHTML = '';
+            sellers.forEach(s => {
+                list.innerHTML += `
+                    <div class="card-item" onclick="openSellerProfile(${s.id})">
+                        <div>
+                            <h3 style="margin-bottom:4px;">${s.name}</h3>
+                            <div class="rating-stars">⭐ ${s.rating} / 5 (${s.reviews.length} Değerlendirme)</div>
+                            <span class="phone-badge"><i class="fa-solid fa-phone"></i> ${s.phone}</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right" style="color:var(--text-muted);"></i>
+                    </div>
+                `;
+            });
+        }
+
+        function openSellerProfile(sellerId) {
+            activeSellerId = sellerId;
+            const seller = sellers.find(s => s.id === sellerId);
+            const content = document.getElementById('seller-profile-content');
+
+            let prodHtml = seller.products.map(p => `
+                <div class="product-card">
+                    <h4 style="color:var(--light-green);">${p.name}</h4>
+                    <p style="font-size:12px; color:var(--text-muted); margin:4px 0;">${p.desc}</p>
+                    <div style="font-weight:bold; font-size:16px; margin:8px 0;">${p.price} TL</div>
+                    <a href="sms:${seller.phone}?body=${encodeURIComponent('Merhaba ' + seller.name + ', ' + p.name + ' siparişi vermek istiyorum.')}" class="btn-sms" style="width:100%; justify-content:center;">
+                        <i class="fa-solid fa-paper-plane"></i> SMS Sipariş
+                    </a>
+                </div>
+            `).join('');
+
+            let reviewsHtml = seller.reviews.map(r => `
+                <div style="background:var(--bg-dark); padding:10px 14px; border-radius:10px; margin-top:8px;">
+                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+                        <strong>${r.reviewer}</strong>
+                        <span>${r.stars}</span>
+                    </div>
+                    <p style="font-size:13px; color:var(--text-muted);">${r.comment}</p>
+                </div>
+            `).join('');
+
+            content.innerHTML = `
+                <h2>${seller.name}</h2>
+                <span class="phone-badge" style="margin-bottom:15px;"><i class="fa-solid fa-phone"></i> ${seller.phone}</span>
+                <div class="rating-stars" style="margin-bottom:20px;">⭐ Ortalama Puan: ${seller.rating} / 5</div>
+                
+                <h3>Ürünleri & Fiyatları</h3>
+                <div class="product-grid">${prodHtml}</div>
+
+                <h3 style="margin-top:20px;">Müşteri Değerlendirmeleri</h3>
+                <div>${reviewsHtml.length ? reviewsHtml : '<p style="font-size:12px; color:var(--text-muted);">Henüz yorum yapılmamış.</p>'}</div>
+            `;
+
+            showScreen('step-seller-profile');
+        }
+
+        function submitReview() {
+            if (!activeSellerId) return;
+            const seller = sellers.find(s => s.id === activeSellerId);
+            const ratingVal = parseInt(document.getElementById('eval-rating').value);
+            const commentVal = document.getElementById('eval-comment').value.trim();
+
+            if (!commentVal) {
+                alert("Lütfen bir yorum yazın!");
+                return;
+            }
+
+            let starsStr = "⭐".repeat(ratingVal);
+            seller.reviews.push({
+                reviewer: userData.name || "Anonim",
+                stars: starsStr,
+                comment: commentVal
+            });
+
+            document.getElementById('eval-comment').value = '';
+            alert("Değerlendirmeniz başarıyla eklendi! ⭐");
+            openSellerProfile(activeSellerId);
+        }
+
+        function addNewProduct() {
+            const name = document.getElementById('new-prod-name').value.trim();
+            const price = document.getElementById('new-prod-price').value.trim();
+            const desc = document.getElementById('new-prod-desc').value.trim();
+
+            if (!name || !price) {
+                alert("Lütfen ürün adı ve fiyatını girin!");
+                return;
+            }
+
+            // Varsayılan ilk satıcıya ekler
+            sellers[0].products.push({
+                name: name,
+                price: parseFloat(price),
+                desc: desc || "Taze köy ürünü"
+            });
+
+            document.getElementById('new-prod-name').value = '';
+            document.getElementById('new-prod-price').value = '';
+            document.getElementById('new-prod-desc').value = '';
+
+            alert("Ürün kataloğunuza eklendi! ✅");
+            renderSellerMyProducts();
+        }
+
+        function renderSellerMyProducts() {
+            const container = document.getElementById('seller-my-products');
+            container.innerHTML = '';
+            sellers[0].products.forEach(p => {
+                container.innerHTML += `
+                    <div class="product-card">
+                        <h4 style="color:var(--light-green);">${p.name}</h4>
+                        <p style="font-size:12px; color:var(--text-muted); margin:4px 0;">${p.desc}</p>
+                        <div style="font-weight:bold; font-size:16px;">${p.price} TL</div>
+                    </div>
+                `;
+            });
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.step-screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function resetFlow() {
+            document.getElementById('input-name').value = '';
+            document.getElementById('input-phone').value = '';
+            document.getElementById('user-nav').style.display = 'none';
+            showScreen('step-1');
+        }
+    </script>
+</body>
+</html>
