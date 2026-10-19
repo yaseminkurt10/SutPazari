@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SütPazarı — Tazeliğin En Doğal Hali</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- FontAwesome İkonları -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Leaflet.js Harita CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
     <style>
         :root {
             --bg-dark: #121c17;
@@ -15,6 +18,7 @@
             --accent-yellow: #f6ad55;
             --text-light: #f7fafc;
             --text-muted: #a0aec0;
+            --danger-red: #e53e3e;
         }
 
         * {
@@ -30,64 +34,237 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            padding-bottom: 70px; /* Alt Navigasyon için alan */
         }
 
+        /* Üst Header */
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 8%;
+            padding: 16px 5%;
             background-color: rgba(18, 28, 23, 0.95);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
         }
 
         .logo-container {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .logo-icon {
-            width: 40px;
-            height: 40px;
+            width: 38px;
+            height: 38px;
             background: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--bg-dark);
-            font-size: 20px;
+            font-size: 18px;
         }
 
         .logo-text h1 {
-            font-size: 20px;
-            font-weight: 700;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
         }
 
         .logo-text p {
-            font-size: 10px;
+            font-size: 9px;
             color: var(--primary-green);
             letter-spacing: 1px;
+            font-weight: 700;
         }
 
+        .user-nav-btn {
+            background: var(--card-accent);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-light);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Ana Konteyner */
         .container {
-            width: 90%;
-            max-width: 850px;
-            margin: 30px auto;
+            width: 92%;
+            max-width: 700px;
+            margin: 20px auto 0;
             flex: 1;
         }
 
-        .step-screen {
+        /* Sekmeler (Tab Content) */
+        .tab-content {
             display: none;
-            background: var(--card-dark);
-            border-radius: 24px;
-            padding: 30px;
-            border: 1px solid rgba(56, 161, 105, 0.3);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        .step-screen.active {
+        .tab-content.active {
             display: block;
+        }
+
+        /* Harita Kartı */
+        .map-card {
+            background: var(--card-dark);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(56, 161, 105, 0.3);
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+        }
+
+        .map-header {
+            padding: 12px 16px;
+            background: var(--card-accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        #map {
+            height: 250px;
+            width: 100%;
+            z-index: 1;
+        }
+
+        /* Kart Yapısı */
+        .card-item {
+            background: var(--card-dark);
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .card-item:hover {
+            border-color: rgba(56, 161, 105, 0.5);
+        }
+
+        .phone-badge {
+            background: rgba(56, 161, 105, 0.15);
+            color: var(--light-green);
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 6px;
+            border: 1px solid rgba(163, 230, 53, 0.2);
+        }
+
+        .stock-badge {
+            background: rgba(246, 173, 85, 0.15);
+            color: var(--accent-yellow);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+
+        .rating-stars {
+            color: var(--accent-yellow);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        /* Butonlar */
+        .btn-primary {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #2f855a;
+        }
+
+        .btn-sms {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        /* Ürün Izgarası */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin: 15px 0;
+        }
+
+        .product-card {
+            background: var(--bg-dark);
+            border-radius: 14px;
+            padding: 14px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Modal (Açılır Pencere) */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: var(--card-dark);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 420px;
+            padding: 25px;
+            border: 1px solid rgba(56, 161, 105, 0.4);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
         }
 
         .form-group {
@@ -96,217 +273,107 @@
 
         .form-group label {
             display: block;
-            font-size: 13px;
+            font-size: 12px;
             color: var(--text-muted);
-            margin-bottom: 6px;
+            margin-bottom: 5px;
         }
 
-        .form-group input, .form-group textarea {
+        .form-group input, .form-group select {
             width: 100%;
-            padding: 12px 16px;
-            border-radius: 12px;
+            padding: 11px 14px;
+            border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             background: var(--bg-dark);
             color: white;
-            font-size: 15px;
+            font-size: 14px;
         }
 
-        .btn-primary {
+        /* Alt Sabit Navigasyon Barı */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
             width: 100%;
-            background: var(--primary-green);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .role-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 25px;
-        }
-
-        .role-card {
-            background: var(--card-accent);
-            border-radius: 20px;
-            padding: 30px 20px;
-            text-align: center;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: 0.3s;
-        }
-
-        .role-card:hover {
-            border-color: var(--primary-green);
-            transform: translateY(-4px);
-        }
-
-        .role-card i {
-            font-size: 40px;
-            color: var(--light-green);
-            margin-bottom: 15px;
-        }
-
-        .card-item {
-            background: var(--card-accent);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .card-item:hover {
-            border: 1px solid var(--primary-green);
-        }
-
-        .phone-badge {
-            background: rgba(56, 161, 105, 0.2);
-            color: var(--light-green);
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-block;
-            margin-top: 6px;
-        }
-
-        .rating-stars {
-            color: var(--accent-yellow);
-            font-size: 14px;
-        }
-
-        .btn-sms {
-            background: var(--primary-green);
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-        }
-
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .product-card {
-            background: var(--bg-dark);
-            border-radius: 14px;
-            padding: 15px;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .user-nav-info {
-            font-size: 13px;
-            color: var(--text-muted);
-            background: rgba(255,255,255,0.05);
-            padding: 6px 14px;
-            border-radius: 20px;
-        }
-
-        .back-btn {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 14px;
-            margin-bottom: 15px;
+            background: rgba(18, 28, 23, 0.98);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 6px;
+            color: var(--text-muted);
+            font-size: 11px;
+            cursor: pointer;
+            gap: 4px;
+            border: none;
+            background: none;
+            width: 33%;
+        }
+
+        .nav-item i {
+            font-size: 18px;
+        }
+
+        .nav-item.active {
+            color: var(--light-green);
         }
     </style>
 </head>
 <body>
 
+    <!-- Header -->
     <header>
         <div class="logo-container">
             <div class="logo-icon"><i class="fa-solid fa-glass-water"></i></div>
             <div class="logo-text">
                 <h1>SütPazarı</h1>
-                <p>DOĞALLIĞIN ADRESİ</p>
+                <p>CANLI DAĞITIM & PAZARYERİ</p>
             </div>
         </div>
-        <div id="user-nav" class="user-nav-info" style="display:none;"></div>
+        <button class="user-nav-btn" onclick="openProfileModal()">
+            <i class="fa-solid fa-circle-user" style="color:var(--light-green);"></i>
+            <span id="header-user-name">Giriş Yap</span>
+        </button>
     </header>
 
+    <!-- Ana Konteyner -->
     <div class="container">
-        
-        <!-- 1. EKRAN: Kullanıcı Girişi -->
-        <div id="step-1" class="step-screen active">
-            <h2 style="margin-bottom: 10px;"><i class="fa-solid fa-user-plus" style="color:var(--primary-green);"></i> Profil Oluştur</h2>
-            <p style="color: var(--text-muted); font-size:14px; margin-bottom: 25px;">Devam etmek için bilgilerinizi girin.</p>
+
+        <!-- 1. SEKME: ALICI PANENİ & SÜTÇÜ LİSTESİ -->
+        <div id="tab-buyer" class="tab-content active">
             
-            <div class="form-group">
-                <label>Ad Soyad</label>
-                <input type="text" id="input-name" placeholder="Örn: Ahmet Yılmaz">
-            </div>
-            
-            <div class="form-group">
-                <label>Telefon Numarası</label>
-                <input type="tel" id="input-phone" placeholder="05XX XXX XX XX">
-            </div>
-
-            <button class="btn-primary" onclick="goToStep2()">Devam Et <i class="fa-solid fa-arrow-right"></i></button>
-        </div>
-
-        <!-- 2. EKRAN: Rol Seçimi -->
-        <div id="step-2" class="step-screen">
-            <h2><i class="fa-solid fa-users" style="color:var(--accent-yellow);"></i> Rolünüzü Seçin</h2>
-            <p style="color: var(--text-muted); font-size:14px;">Sistemde ne olarak devam etmek istiyorsunuz?</p>
-
-            <div class="role-grid">
-                <div class="role-card" onclick="selectRole('buyer')">
-                    <i class="fa-solid fa-basket-shopping"></i>
-                    <h3>Süt Alıcısı</h3>
-                    <p style="font-size:12px; color:var(--text-muted); margin-top:8px;">Satıcıları incele, puan ver, sipariş ver.</p>
+            <!-- Canlı Harita Kartı -->
+            <div class="map-card">
+                <div class="map-header">
+                    <span><i class="fa-solid fa-location-crosshairs" style="color:var(--light-green);"></i> Canlı Sütçü Konum Takibi</span>
+                    <span id="live-status-badge" style="color:var(--text-muted); font-size:11px;">Konum İzni Bekleniyor</span>
                 </div>
-                <div class="role-card" onclick="selectRole('seller')">
-                    <i class="fa-solid fa-truck-field"></i>
-                    <h3>Süt Satıcısı</h3>
-                    <p style="font-size:12px; color:var(--text-muted); margin-top:8px;">Ürünlerini ekle, siparişleri gör.</p>
-                </div>
+                <div id="map"></div>
             </div>
-        </div>
 
-        <!-- 3. EKRAN (ALICI): Satıcı Listesi -->
-        <div id="step-3-buyer" class="step-screen">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2><i class="fa-solid fa-store" style="color:var(--primary-green);"></i> Yakındaki Satıcılar</h2>
-                <button onclick="resetFlow()" style="background:none; border:none; color:var(--text-muted); cursor:pointer;"><i class="fa-solid fa-right-from-bracket"></i> Çıkış</button>
-            </div>
-            <p style="color:var(--text-muted); font-size:13px; margin-bottom:15px;">Profilini ve ürünlerini incelemek istediğiniz satıcıya tıklayın:</p>
-            
+            <h3 style="margin-bottom:12px; font-size:16px;"><i class="fa-solid fa-store" style="color:var(--primary-green);"></i> Yakındaki Sütçüler</h3>
             <div id="sellers-list"></div>
         </div>
 
-        <!-- 4. EKRAN (SATICI DETAY & DEĞERLENDİRME): Satıcı Profili -->
-        <div id="step-seller-profile" class="step-screen">
-            <button class="back-btn" onclick="showScreen('step-3-buyer')"><i class="fa-solid fa-arrow-left"></i> Satıcılara Dön</button>
-            
-            <div id="seller-profile-content"></div>
+        <!-- 2. SEKME: SATICI DETAY SAYFASI (ALICI İÇİN) -->
+        <div id="tab-seller-detail" class="tab-content">
+            <button onclick="switchTab('tab-buyer')" style="background:none; border:none; color:var(--text-muted); cursor:pointer; margin-bottom:15px; font-size:13px; display:flex; align-items:center; gap:6px;">
+                <i class="fa-solid fa-arrow-left"></i> Sütçülere Dön
+            </button>
 
-            <!-- Değerlendirme Yap Ekrani -->
-            <div style="background: var(--card-accent); padding:20px; border-radius:16px; margin-top:25px;">
-                <h4 style="margin-bottom:10px;"><i class="fa-solid fa-star" style="color:var(--accent-yellow);"></i> Satıcıyı Değerlendir</h4>
+            <div id="seller-detail-content"></div>
+
+            <!-- Yıldızlı Yorum Formu -->
+            <div style="background: var(--card-dark); padding:20px; border-radius:18px; margin-top:20px; border:1px solid rgba(255,255,255,0.05);">
+                <h4 style="margin-bottom:10px; font-size:15px;"><i class="fa-solid fa-star" style="color:var(--accent-yellow);"></i> Satıcıyı Değerlendir</h4>
                 <div class="form-group">
                     <label>Puanınız</label>
-                    <select id="eval-rating" style="width:100%; padding:10px; border-radius:8px; background:var(--bg-dark); color:white; border:1px solid rgba(255,255,255,0.1);">
+                    <select id="eval-rating">
                         <option value="5">⭐⭐⭐⭐⭐ (5 - Mükemmel Taze)</option>
                         <option value="4">⭐⭐⭐⭐ (4 - Çok İyi)</option>
                         <option value="3">⭐⭐⭐ (3 - Orta)</option>
@@ -316,64 +383,120 @@
                 </div>
                 <div class="form-group">
                     <label>Yorumunuz</label>
-                    <input type="text" id="eval-comment" placeholder="Süt çok taze ve tam zamanında geldi...">
+                    <input type="text" id="eval-comment" placeholder="Süt çok taze ve kapıma kadar geldi...">
                 </div>
-                <button class="btn-primary" style="padding:10px;" onclick="submitReview()">Yorum Yap ve Puan Ver</button>
+                <button class="btn-primary" onclick="submitReview()">Yorum ve Puanı Gönder</button>
             </div>
         </div>
 
-        <!-- 3. EKRAN (SATICI PANELİ): Ürün Ekleme & Müşteri Siparişleri -->
-        <div id="step-3-seller" class="step-screen">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2><i class="fa-solid fa-truck-field" style="color:var(--accent-yellow);"></i> Satıcı Yönetim Paneli</h2>
-                <button onclick="resetFlow()" style="background:none; border:none; color:var(--text-muted); cursor:pointer;"><i class="fa-solid fa-right-from-bracket"></i> Çıkış</button>
-            </div>
-
-            <!-- Yeni Ürün Ekleme Formu -->
-            <div style="background:var(--card-accent); padding:20px; border-radius:16px; margin-bottom:25px;">
-                <h4 style="margin-bottom:12px; color:var(--light-green);"><i class="fa-solid fa-plus-circle"></i> Yeni Ürün Ekle</h4>
+        <!-- 3. SEKME: SATICI YÖNETİM PANELİ -->
+        <div id="tab-seller-dashboard" class="tab-content">
+            <div style="background:var(--card-dark); padding:20px; border-radius:18px; margin-bottom:20px; border:1px solid rgba(56,161,105,0.3);">
+                <h3 style="margin-bottom:12px; color:var(--light-green); font-size:16px;"><i class="fa-solid fa-plus-circle"></i> Stok & Yeni Ürün Ekle</h3>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <input type="text" id="new-prod-name" placeholder="Ürün Adı (Örn: Günlük Süt)">
-                    <input type="number" id="new-prod-price" placeholder="Fiyatı TL (Örn: 40)">
+                    <div class="form-group">
+                        <label>Ürün Adı</label>
+                        <input type="text" id="new-prod-name" placeholder="Örn: Günlük Süt">
+                    </div>
+                    <div class="form-group">
+                        <label>Fiyat (TL)</label>
+                        <input type="number" id="new-prod-price" placeholder="40">
+                    </div>
                 </div>
-                <input type="text" id="new-prod-desc" placeholder="Açıklama (Örn: Taze inek sütü, 1 Litre)" style="margin-top:10px; width:100%; padding:10px; border-radius:10px; background:var(--bg-dark); border:1px solid rgba(255,255,255,0.1); color:white;">
-                <button class="btn-primary" style="margin-top:12px; padding:10px;" onclick="addNewProduct()"><i class="fa-solid fa-plus"></i> Ürünü Kataloğa Ekle</button>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <div class="form-group">
+                        <label>Mevcut Stok (Litre/Kg)</label>
+                        <input type="number" id="new-prod-stock" placeholder="Örn: 50">
+                    </div>
+                    <div class="form-group">
+                        <label>Açıklama</label>
+                        <input type="text" id="new-prod-desc" placeholder="Örn: Çiğ İnek Sütü">
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="addNewProduct()"><i class="fa-solid fa-check"></i> Kataloğa Ekle</button>
             </div>
 
-            <h3>Katalogdaki Ürünleriniz</h3>
+            <h3 style="margin-bottom:10px; font-size:15px;">Ürünleriniz & Stok Durumu</h3>
             <div id="seller-my-products" class="product-grid"></div>
 
-            <h3 style="margin-top:25px; margin-bottom:12px;">Müşteri Siparişleri</h3>
-            <div id="buyers-list">
-                <div class="card-item" style="cursor:default;">
-                    <div>
-                        <h3>Mehmet Yılmaz</h3>
-                        <p style="font-size:12px; color:var(--light-green);">Sipariş: 2 Litre Günlük Süt</p>
-                        <span class="phone-badge"><i class="fa-solid fa-phone"></i> 0544 999 88 77</span>
-                    </div>
-                    <a href="sms:05449998877?body=SütPazarı: Siparişiniz yola çıktı, kapıda olunuz!" class="btn-sms" style="background:var(--accent-yellow); color:#1a202c;">
-                        <i class="fa-solid fa-truck"></i> Yola Çıktım SMS
-                    </a>
-                </div>
-            </div>
+            <h3 style="margin-top:25px; margin-bottom:12px; font-size:15px;">Müşteri Siparişleri & Dağıtım</h3>
+            <div id="buyers-orders-list"></div>
         </div>
 
     </div>
 
-    <script>
-        let userData = { name: '', phone: '', role: '' };
-        let activeSellerId = null;
+    <!-- Kullanıcı Profil Modalı -->
+    <div id="profile-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 style="margin-bottom:10px;"><i class="fa-solid fa-id-card" style="color:var(--primary-green);"></i> Kullanıcı Bilgileri</h3>
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:18px;">Siparişte gözükecek adınızı ve numaranızı doğrulayın.</p>
+            
+            <div class="form-group">
+                <label>Ad Soyad</label>
+                <input type="text" id="modal-input-name" placeholder="Örn: Ahmet Yılmaz">
+            </div>
 
-        // Örnek Veritabanı
+            <div class="form-group">
+                <label>Telefon Numarası</label>
+                <input type="tel" id="modal-input-phone" placeholder="05XX XXX XX XX">
+            </div>
+
+            <div class="form-group">
+                <label>Rolünüz</label>
+                <select id="modal-input-role">
+                    <option value="buyer">Süt Alıcısı (Müşteri)</option>
+                    <option value="seller">Süt Satıcısı (Dağıtıcı)</option>
+                </select>
+            </div>
+
+            <button class="btn-primary" onclick="saveProfile()"><i class="fa-solid fa-floppy-disk"></i> Bilgileri Kaydet</button>
+        </div>
+    </div>
+
+    <!-- Alt Navigasyon Barı -->
+    <div class="bottom-nav">
+        <button class="nav-item active" id="nav-buyer" onclick="switchTab('tab-buyer')">
+            <i class="fa-solid fa-basket-shopping"></i>
+            <span>Süt Satıcıları</span>
+        </button>
+        <button class="nav-item" id="nav-seller" onclick="handleSellerTabClick()">
+            <i class="fa-solid fa-truck-field"></i>
+            <span>Satıcı Paneli</span>
+        </button>
+        <button class="nav-item" onclick="openProfileModal()">
+            <i class="fa-solid fa-user-gear"></i>
+            <span>Profilim</span>
+        </button>
+    </div>
+
+    <!-- Leaflet Harita JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script>
+        // Uygulama Durumu (State)
+        let currentUser = {
+            name: '',
+            phone: '',
+            role: 'buyer'
+        };
+
+        let activeSellerDetailId = null;
+        let map = null;
+        let sellerMarker = null;
+        let userMarker = null;
+        let animationInterval = null;
+
+        // Örnek Satıcı Veritabanı
         let sellers = [
             {
                 id: 1,
                 name: "Ahmet Sütçü (Köy Sütçüsü)",
                 phone: "0532 111 22 33",
                 rating: 4.9,
+                lat: 37.9150,
+                lng: 40.2300,
                 products: [
-                    { name: "Günlük İnek Sütü (1L)", price: 40, desc: "Çiğ, taze, tam yağlı." },
-                    { name: "Köy Yoğurdu (2kg)", price: 75, desc: "Süzme taş gibi ev yoğurdu." }
+                    { id: 101, name: "Günlük İnek Sütü (1L)", price: 40, stock: 45, desc: "Çiğ, taze, tam yağlı günlük süt." },
+                    { id: 102, name: "Köy Yoğurdu (2kg)", price: 75, stock: 12, desc: "Süzme taş gibi ev yoğurdu." }
                 ],
                 reviews: [
                     { reviewer: "Mehmet K.", stars: "⭐⭐⭐⭐⭐", comment: "Süt harika, kaymağı çok bol çıktı!" }
@@ -384,176 +507,324 @@
                 name: "Mehmet Dağıtım",
                 phone: "0544 888 77 66",
                 rating: 4.7,
+                lat: 37.9200,
+                lng: 40.2200,
                 products: [
-                    { name: "Doğal Yayık Tereyağı (500g)", price: 130, desc: "Köy tereyağı lezzeti." },
-                    { name: "Ezine Peynir (500g)", price: 140, desc: "Tam yağlı olgunlaştırılmış." }
+                    { id: 201, name: "Doğal Yayık Tereyağı (500g)", price: 130, stock: 8, desc: "Geleneksel yayık tereyağı." },
+                    { id: 202, name: "Ezine Peynir (500g)", price: 140, stock: 15, desc: "Tam yağlı koyun peyniri." }
                 ],
                 reviews: [
-                    { reviewer: "Ayşe T.", stars: "⭐⭐⭐⭐⭐", comment: "Tereyağı kokusu muazzam." }
+                    { reviewer: "Ayşe T.", stars: "⭐⭐⭐⭐⭐", comment: "Tereyağı kokusu muazzam taze." }
                 ]
             }
         ];
 
-        function goToStep2() {
-            const name = document.getElementById('input-name').value.trim();
-            const phone = document.getElementById('input-phone').value.trim();
+        // Sayfa Yüklendiğinde
+        window.onload = function() {
+            loadProfileFromStorage();
+            initMap();
+            renderSellersList();
+            renderOrdersList();
+        };
+
+        // Profil Yükleme
+        function loadProfileFromStorage() {
+            const saved = localStorage.getItem('sutpazari_user');
+            if (saved) {
+                currentUser = JSON.parse(saved);
+                document.getElementById('header-user-name').innerText = currentUser.name;
+                document.getElementById('modal-input-name').value = currentUser.name;
+                document.getElementById('modal-input-phone').value = currentUser.phone;
+                document.getElementById('modal-input-role').value = currentUser.role;
+            } else {
+                openProfileModal();
+            }
+        }
+
+        function openProfileModal() {
+            document.getElementById('profile-modal').classList.add('active');
+        }
+
+        function saveProfile() {
+            const name = document.getElementById('modal-input-name').value.trim();
+            const phone = document.getElementById('modal-input-phone').value.trim();
+            const role = document.getElementById('modal-input-role').value;
 
             if (!name || !phone) {
-                alert("Lütfen Ad Soyad ve Telefon numaranızı girin!");
+                alert("Lütfen Ad Soyad ve Telefon Numarası giriniz!");
                 return;
             }
 
-            userData.name = name;
-            userData.phone = phone;
+            currentUser = { name, phone, role };
+            localStorage.setItem('sutpazari_user', JSON.stringify(currentUser));
+            document.getElementById('header-user-name').innerText = name;
+            document.getElementById('profile-modal').classList.remove('active');
 
-            const nav = document.getElementById('user-nav');
-            nav.style.display = 'block';
-            nav.innerHTML = `<i class="fa-solid fa-user"></i> ${name} (${phone})`;
-
-            showScreen('step-2');
-        }
-
-        function selectRole(role) {
-            userData.role = role;
-            if (role === 'buyer') {
-                renderSellersList();
-                showScreen('step-3-buyer');
+            if (role === 'seller') {
+                switchTab('tab-seller-dashboard');
             } else {
-                renderSellerMyProducts();
-                showScreen('step-3-seller');
+                switchTab('tab-buyer');
             }
         }
 
-        function renderSellersList() {
-            const list = document.getElementById('sellers-list');
-            list.innerHTML = '';
+        // Harita Başlatma (403 Hata Korumalı Esri & CartoDB Katmanları)
+        function initMap() {
+            map = L.map('map').setView([37.9150, 40.2300], 13);
+
+            // Esri World Street Map (403 Verme Riski Yoktur)
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri',
+                maxZoom: 18,
+                referrerPolicy: 'strict-origin-when-cross-origin'
+            }).addTo(map);
+
+            // Kullanıcı Konumu İsteği
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        map.setView([lat, lng], 14);
+
+                        userMarker = L.marker([lat, lng]).addTo(map)
+                            .bindPopup('<b>Sizin Konumunuz</b>').openPopup();
+
+                        document.getElementById('live-status-badge').innerText = "Canlı Konum Aktif";
+                        document.getElementById('live-status-badge').style.color = "var(--light-green)";
+                    },
+                    () => {
+                        document.getElementById('live-status-badge').innerText = "Varsayılan Konum Gösteriliyor";
+                    }
+                );
+            }
+
+            // Satıcı Simgelerini Haritaya Ekle
             sellers.forEach(s => {
-                list.innerHTML += `
-                    <div class="card-item" onclick="openSellerProfile(${s.id})">
-                        <div>
-                            <h3 style="margin-bottom:4px;">${s.name}</h3>
-                            <div class="rating-stars">⭐ ${s.rating} / 5 (${s.reviews.length} Değerlendirme)</div>
-                            <span class="phone-badge"><i class="fa-solid fa-phone"></i> ${s.phone}</span>
+                L.marker([s.lat, s.lng]).addTo(map)
+                    .bindPopup(`<b>${s.name}</b><br>Tel: ${s.phone}<br>⭐ ${s.rating}`);
+            });
+        }
+
+        // Sekme Değiştirme
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+
+            if (tabId === 'tab-buyer') {
+                document.getElementById('nav-buyer').classList.add('active');
+                setTimeout(() => map && map.invalidateSize(), 300);
+            } else if (tabId === 'tab-seller-dashboard') {
+                document.getElementById('nav-seller').classList.add('active');
+                renderSellerMyProducts();
+            }
+        }
+
+        function handleSellerTabClick() {
+            if (currentUser.role !== 'seller') {
+                alert("Satıcı paneline erişmek için profil ayarlarından rolünüzü 'Süt Satıcısı' yapın!");
+                openProfileModal();
+                return;
+            }
+            switchTab('tab-seller-dashboard');
+        }
+
+        // Satıcı Listesini Ekrana Basma
+        function renderSellersList() {
+            const container = document.getElementById('sellers-list');
+            container.innerHTML = '';
+
+            sellers.forEach(s => {
+                let totalStock = s.products.reduce((acc, p) => acc + p.stock, 0);
+
+                container.innerHTML += `
+                    <div class="card-item" onclick="openSellerDetail(${s.id})">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <div>
+                                <h3 style="font-size:16px;">${s.name}</h3>
+                                <div class="rating-stars">⭐ ${s.rating} / 5 (${s.reviews.length} Değerlendirme)</div>
+                                <span class="phone-badge"><i class="fa-solid fa-phone"></i> ${s.phone}</span>
+                                <span class="stock-badge"><i class="fa-solid fa-cubes"></i> Toplam Stok: ${totalStock} Litre/Kg</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right" style="color:var(--text-muted); margin-top:10px;"></i>
                         </div>
-                        <i class="fa-solid fa-chevron-right" style="color:var(--text-muted);"></i>
                     </div>
                 `;
             });
         }
 
-        function openSellerProfile(sellerId) {
-            activeSellerId = sellerId;
+        // Satıcı Detay Profili Açma
+        function openSellerDetail(sellerId) {
+            activeSellerDetailId = sellerId;
             const seller = sellers.find(s => s.id === sellerId);
-            const content = document.getElementById('seller-profile-content');
+            const container = document.getElementById('seller-detail-content');
 
-            let prodHtml = seller.products.map(p => `
+            let productsHtml = seller.products.map(p => `
                 <div class="product-card">
-                    <h4 style="color:var(--light-green);">${p.name}</h4>
-                    <p style="font-size:12px; color:var(--text-muted); margin:4px 0;">${p.desc}</p>
-                    <div style="font-weight:bold; font-size:16px; margin:8px 0;">${p.price} TL</div>
-                    <a href="sms:${seller.phone}?body=${encodeURIComponent('Merhaba ' + seller.name + ', ' + p.name + ' siparişi vermek istiyorum.')}" class="btn-sms" style="width:100%; justify-content:center;">
-                        <i class="fa-solid fa-paper-plane"></i> SMS Sipariş
+                    <div>
+                        <h4 style="color:var(--light-green); font-size:15px;">${p.name}</h4>
+                        <p style="font-size:12px; color:var(--text-muted); margin:4px 0;">${p.desc}</p>
+                        <div style="font-weight:bold; font-size:16px; margin:6px 0; color:white;">${p.price} TL</div>
+                        <span class="stock-badge" style="margin-bottom:10px; display:inline-block;">Kalan Stok: ${p.stock}</span>
+                    </div>
+                    <a href="sms:${seller.phone}?body=${encodeURIComponent('Merhaba ' + seller.name + ', ' + p.name + ' siparişi vermek istiyorum. Adım: ' + currentUser.name + ' Tel: ' + currentUser.phone)}" class="btn-sms" style="justify-content:center; width:100%;">
+                        <i class="fa-solid fa-comment-sms"></i> SMS Sipariş Ver
                     </a>
                 </div>
             `).join('');
 
             let reviewsHtml = seller.reviews.map(r => `
-                <div style="background:var(--bg-dark); padding:10px 14px; border-radius:10px; margin-top:8px;">
+                <div style="background:var(--bg-dark); padding:10px 14px; border-radius:10px; margin-top:8px; border:1px solid rgba(255,255,255,0.05);">
                     <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
                         <strong>${r.reviewer}</strong>
                         <span>${r.stars}</span>
                     </div>
-                    <p style="font-size:13px; color:var(--text-muted);">${r.comment}</p>
+                    <p style="font-size:12px; color:var(--text-muted);">${r.comment}</p>
                 </div>
             `).join('');
 
-            content.innerHTML = `
-                <h2>${seller.name}</h2>
-                <span class="phone-badge" style="margin-bottom:15px;"><i class="fa-solid fa-phone"></i> ${seller.phone}</span>
-                <div class="rating-stars" style="margin-bottom:20px;">⭐ Ortalama Puan: ${seller.rating} / 5</div>
-                
-                <h3>Ürünleri & Fiyatları</h3>
-                <div class="product-grid">${prodHtml}</div>
+            container.innerHTML = `
+                <div class="card-item" style="border-color:var(--primary-green);">
+                    <h2 style="font-size:18px;">${seller.name}</h2>
+                    <span class="phone-badge" style="margin-top:8px;"><i class="fa-solid fa-phone"></i> ${seller.phone}</span>
+                    <div class="rating-stars" style="margin-top:6px;">⭐ Ortalama Puan: ${seller.rating} / 5</div>
+                </div>
 
-                <h3 style="margin-top:20px;">Müşteri Değerlendirmeleri</h3>
-                <div>${reviewsHtml.length ? reviewsHtml : '<p style="font-size:12px; color:var(--text-muted);">Henüz yorum yapılmamış.</p>'}</div>
+                <h3 style="margin-top:15px; font-size:15px;">Satıştaki Ürünler & Fiyatlar</h3>
+                <div class="product-grid">${productsHtml}</div>
+
+                <h3 style="margin-top:20px; font-size:15px;">Müşteri Değerlendirmeleri</h3>
+                <div>${reviewsHtml.length ? reviewsHtml : '<p style="font-size:12px; color:var(--text-muted);">Henüz değerlendirme yapılmamış.</p>'}</div>
             `;
 
-            showScreen('step-seller-profile');
+            switchTab('tab-seller-detail');
         }
 
+        // Değerlendirme Gönderme
         function submitReview() {
-            if (!activeSellerId) return;
-            const seller = sellers.find(s => s.id === activeSellerId);
+            if (!activeSellerDetailId) return;
+            const seller = sellers.find(s => s.id === activeSellerDetailId);
             const ratingVal = parseInt(document.getElementById('eval-rating').value);
             const commentVal = document.getElementById('eval-comment').value.trim();
 
             if (!commentVal) {
-                alert("Lütfen bir yorum yazın!");
+                alert("Lütfen bir yorum metni yazın!");
                 return;
             }
 
-            let starsStr = "⭐".repeat(ratingVal);
             seller.reviews.push({
-                reviewer: userData.name || "Anonim",
-                stars: starsStr,
+                reviewer: currentUser.name || "Anonim Alıcı",
+                stars: "⭐".repeat(ratingVal),
                 comment: commentVal
             });
 
             document.getElementById('eval-comment').value = '';
             alert("Değerlendirmeniz başarıyla eklendi! ⭐");
-            openSellerProfile(activeSellerId);
+            openSellerDetail(activeSellerDetailId);
         }
 
+        // Satıcı Tarafı: Yeni Ürün Ekleme
         function addNewProduct() {
             const name = document.getElementById('new-prod-name').value.trim();
-            const price = document.getElementById('new-prod-price').value.trim();
+            const price = parseFloat(document.getElementById('new-prod-price').value);
+            const stock = parseInt(document.getElementById('new-prod-stock').value);
             const desc = document.getElementById('new-prod-desc').value.trim();
 
-            if (!name || !price) {
-                alert("Lütfen ürün adı ve fiyatını girin!");
+            if (!name || isNaN(price) || isNaN(stock)) {
+                alert("Lütfen Ürün Adı, Fiyatı ve Stok Miktarını eksiksiz girin!");
                 return;
             }
 
-            // Varsayılan ilk satıcıya ekler
+            // Varsayılan Satıcıya Ürün Ekle
             sellers[0].products.push({
+                id: Date.now(),
                 name: name,
-                price: parseFloat(price),
+                price: price,
+                stock: stock,
                 desc: desc || "Taze köy ürünü"
             });
 
             document.getElementById('new-prod-name').value = '';
             document.getElementById('new-prod-price').value = '';
+            document.getElementById('new-prod-stock').value = '';
             document.getElementById('new-prod-desc').value = '';
 
-            alert("Ürün kataloğunuza eklendi! ✅");
+            alert("Yeni ürün kataloğunuza başarıyla eklendi! ✅");
             renderSellerMyProducts();
+            renderSellersList();
         }
 
         function renderSellerMyProducts() {
             const container = document.getElementById('seller-my-products');
             container.innerHTML = '';
+
             sellers[0].products.forEach(p => {
                 container.innerHTML += `
                     <div class="product-card">
-                        <h4 style="color:var(--light-green);">${p.name}</h4>
-                        <p style="font-size:12px; color:var(--text-muted); margin:4px 0;">${p.desc}</p>
-                        <div style="font-weight:bold; font-size:16px;">${p.price} TL</div>
+                        <div>
+                            <h4 style="color:var(--light-green); font-size:14px;">${p.name}</h4>
+                            <p style="font-size:11px; color:var(--text-muted); margin:4px 0;">${p.desc}</p>
+                            <div style="font-weight:bold; font-size:15px; color:white;">${p.price} TL</div>
+                        </div>
+                        <span class="stock-badge" style="margin-top:8px;">Stok: ${p.stock} Litre/Kg</span>
                     </div>
                 `;
             });
         }
 
-        function showScreen(screenId) {
-            document.querySelectorAll('.step-screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
+        // Satıcı Tarafı: Müşteri Siparişleri ve Canlı Dağıtım
+        function renderOrdersList() {
+            const container = document.getElementById('buyers-orders-list');
+            container.innerHTML = `
+                <div class="card-item">
+                    <div>
+                        <h3 style="font-size:15px;">Mehmet Yılmaz</h3>
+                        <p style="font-size:12px; color:var(--light-green); margin:4px 0;">Sipariş: 2 Litre Günlük Süt</p>
+                        <span class="phone-badge"><i class="fa-solid fa-phone"></i> 0544 999 88 77</span>
+                    </div>
+                    <div style="margin-top:12px; display:flex; gap:8px;">
+                        <button class="btn-primary" style="background:var(--accent-yellow); color:#1a202c;" onclick="startDeliveryAnimation()">
+                            <i class="fa-solid fa-motorcycle"></i> Canlı Dağıtıma Başla
+                        </button>
+                        <a href="sms:05449998877?body=SütPazarı: Siparişiniz yola çıktı, kapıda olunuz!" class="btn-sms">
+                            <i class="fa-solid fa-comment-sms"></i> SMS
+                        </a>
+                    </div>
+                </div>
+            `;
         }
 
-        function resetFlow() {
-            document.getElementById('input-name').value = '';
-            document.getElementById('input-phone').value = '';
-            document.getElementById('user-nav').style.display = 'none';
-            showScreen('step-1');
+        // Canlı Dağıtım Harita Animasyonu
+        function startDeliveryAnimation() {
+            switchTab('tab-buyer');
+            alert("Dağıtım başlatıldı! Harita üzerinde sütçü canlı olarak adrese ilerliyor. 🛵");
+
+            let startLat = 37.9150;
+            let startLng = 40.2300;
+            let targetLat = 37.9250;
+            let targetLng = 40.2400;
+
+            if (sellerMarker) map.removeLayer(sellerMarker);
+
+            sellerMarker = L.marker([startLat, startLng]).addTo(map)
+                .bindPopup('<b>Sütçü Yolda! 🛵</b>').openPopup();
+
+            let steps = 0;
+            if (animationInterval) clearInterval(animationInterval);
+
+            animationInterval = setInterval(() => {
+                steps++;
+                let currentLat = startLat + (targetLat - startLat) * (steps / 50);
+                let currentLng = startLng + (targetLng - startLng) * (steps / 50);
+
+                sellerMarker.setLatLng([currentLat, currentLng]);
+
+                if (steps >= 50) {
+                    clearInterval(animationInterval);
+                    sellerMarker.bindPopup('<b>Sütçü Kapıda! 🥛</b>').openPopup();
+                }
+            }, 300);
         }
     </script>
 </body>
