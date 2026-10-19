@@ -72,17 +72,16 @@
 
         .container {
             width: 90%;
-            max-width: 800px;
-            margin: 40px auto;
+            max-width: 850px;
+            margin: 30px auto;
             flex: 1;
         }
 
-        /* Ekranlar */
         .step-screen {
             display: none;
             background: var(--card-dark);
             border-radius: 24px;
-            padding: 35px;
+            padding: 30px;
             border: 1px solid rgba(56, 161, 105, 0.3);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
@@ -92,24 +91,24 @@
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .form-group label {
             display: block;
-            font-size: 14px;
+            font-size: 13px;
             color: var(--text-muted);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
-        .form-group input {
+        .form-group input, .form-group textarea {
             width: 100%;
-            padding: 14px 18px;
+            padding: 12px 16px;
             border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             background: var(--bg-dark);
             color: white;
-            font-size: 16px;
+            font-size: 15px;
         }
 
         .btn-primary {
@@ -125,11 +124,6 @@
             transition: 0.3s;
         }
 
-        .btn-primary:hover {
-            background: #2f855a;
-        }
-
-        /* Rol Seçimi */
         .role-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -158,40 +152,63 @@
             margin-bottom: 15px;
         }
 
-        /* Kart Listeleri */
         .card-item {
             background: var(--card-accent);
             border-radius: 16px;
             padding: 20px;
             margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .card-item:hover {
+            border: 1px solid var(--primary-green);
         }
 
         .phone-badge {
             background: rgba(56, 161, 105, 0.2);
             color: var(--light-green);
-            padding: 6px 12px;
+            padding: 4px 10px;
             border-radius: 8px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             display: inline-block;
             margin-top: 6px;
+        }
+
+        .rating-stars {
+            color: var(--accent-yellow);
+            font-size: 14px;
         }
 
         .btn-sms {
             background: var(--primary-green);
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 10px 18px;
             border-radius: 10px;
             text-decoration: none;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            cursor: pointer;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .product-card {
+            background: var(--bg-dark);
+            border-radius: 14px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
         .user-nav-info {
@@ -200,6 +217,18 @@
             background: rgba(255,255,255,0.05);
             padding: 6px 14px;
             border-radius: 20px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
     </style>
 </head>
@@ -218,10 +247,10 @@
 
     <div class="container">
         
-        <!-- 1. EKRAN: Kullanıcı Bilgileri Girişi -->
+        <!-- 1. EKRAN: Kullanıcı Girişi -->
         <div id="step-1" class="step-screen active">
             <h2 style="margin-bottom: 10px;"><i class="fa-solid fa-user-plus" style="color:var(--primary-green);"></i> Profil Oluştur</h2>
-            <p style="color: var(--text-muted); font-size:14px; margin-bottom: 25px;">Devam etmek için adınızı ve telefon numaranızı girin.</p>
+            <p style="color: var(--text-muted); font-size:14px; margin-bottom: 25px;">Devam etmek için bilgilerinizi girin.</p>
             
             <div class="form-group">
                 <label>Ad Soyad</label>
@@ -245,131 +274,67 @@
                 <div class="role-card" onclick="selectRole('buyer')">
                     <i class="fa-solid fa-basket-shopping"></i>
                     <h3>Süt Alıcısı</h3>
-                    <p style="font-size:12px; color:var(--text-muted); margin-top:8px;">Sütçüleri gör, sipariş ver.</p>
+                    <p style="font-size:12px; color:var(--text-muted); margin-top:8px;">Satıcıları incele, puan ver, sipariş ver.</p>
                 </div>
                 <div class="role-card" onclick="selectRole('seller')">
                     <i class="fa-solid fa-truck-field"></i>
                     <h3>Süt Satıcısı</h3>
-                    <p style="font-size:12px; color:var(--text-muted); margin-top:8px;">Müşterileri gör, dağıtıma çık.</p>
+                    <p style="font-size:12px; color:var(--text-muted); margin-top:8px;">Ürünlerini ekle, siparişleri gör.</p>
                 </div>
             </div>
         </div>
 
-        <!-- 3. EKRAN (ALICI PANENI): Satıcıları ve Numaralarını Görme -->
+        <!-- 3. EKRAN (ALICI): Satıcı Listesi -->
         <div id="step-3-buyer" class="step-screen">
-            <div style="display:flex; justify-shadow:space-between; align-items:center; margin-bottom:20px;">
-                <h2><i class="fa-solid fa-store" style="color:var(--primary-green);"></i> Yakındaki Sütçüler</h2>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2><i class="fa-solid fa-store" style="color:var(--primary-green);"></i> Yakındaki Satıcılar</h2>
                 <button onclick="resetFlow()" style="background:none; border:none; color:var(--text-muted); cursor:pointer;"><i class="fa-solid fa-right-from-bracket"></i> Çıkış</button>
             </div>
+            <p style="color:var(--text-muted); font-size:13px; margin-bottom:15px;">Profilini ve ürünlerini incelemek istediğiniz satıcıya tıklayın:</p>
             
-            <div id="sellers-list">
-                <!-- Örnek Satıcılar -->
-                <div class="card-item">
-                    <div>
-                        <h3>Ahmet Sütçü (Köy Sütçüsü)</h3>
-                        <p style="font-size:12px; color:var(--text-muted);">Günlük Taze İnek Sütü & Yoğurt</p>
-                        <span class="phone-badge"><i class="fa-solid fa-phone"></i> 0532 111 22 33</span>
-                    </div>
-                    <a href="sms:05321112233?body=Merhaba, süt siparişi vermek istiyorum." class="btn-sms">
-                        <i class="fa-solid fa-comment-sms"></i> SMS At
-                    </a>
-                </div>
+            <div id="sellers-list"></div>
+        </div>
 
-                <div class="card-item">
-                    <div>
-                        <h3>Mehmet Dağıtım</h3>
-                        <p style="font-size:12px; color:var(--text-muted);">Doğal Tereyağı & Peysir Çeşitleri</p>
-                        <span class="phone-badge"><i class="fa-solid fa-phone"></i> 0544 888 77 66</span>
-                    </div>
-                    <a href="sms:05448887766?body=Merhaba, ürünlerinizi sipariş etmek istiyorum." class="btn-sms">
-                        <i class="fa-solid fa-comment-sms"></i> SMS At
-                    </a>
+        <!-- 4. EKRAN (SATICI DETAY & DEĞERLENDİRME): Satıcı Profili -->
+        <div id="step-seller-profile" class="step-screen">
+            <button class="back-btn" onclick="showScreen('step-3-buyer')"><i class="fa-solid fa-arrow-left"></i> Satıcılara Dön</button>
+            
+            <div id="seller-profile-content"></div>
+
+            <!-- Değerlendirme Yap Ekrani -->
+            <div style="background: var(--card-accent); padding:20px; border-radius:16px; margin-top:25px;">
+                <h4 style="margin-bottom:10px;"><i class="fa-solid fa-star" style="color:var(--accent-yellow);"></i> Satıcıyı Değerlendir</h4>
+                <div class="form-group">
+                    <label>Puanınız</label>
+                    <select id="eval-rating" style="width:100%; padding:10px; border-radius:8px; background:var(--bg-dark); color:white; border:1px solid rgba(255,255,255,0.1);">
+                        <option value="5">⭐⭐⭐⭐⭐ (5 - Mükemmel Taze)</option>
+                        <option value="4">⭐⭐⭐⭐ (4 - Çok İyi)</option>
+                        <option value="3">⭐⭐⭐ (3 - Orta)</option>
+                        <option value="2">⭐⭐ (2 - Kötü)</option>
+                        <option value="1">⭐ (1 - Tavsiye Etmem)</option>
+                    </select>
                 </div>
+                <div class="form-group">
+                    <label>Yorumunuz</label>
+                    <input type="text" id="eval-comment" placeholder="Süt çok taze ve tam zamanında geldi...">
+                </div>
+                <button class="btn-primary" style="padding:10px;" onclick="submitReview()">Yorum Yap ve Puan Ver</button>
             </div>
         </div>
 
-        <!-- 3. EKRAN (SATICI PANENI): Alıcıları ve Numaralarını Görme -->
+        <!-- 3. EKRAN (SATICI PANELİ): Ürün Ekleme & Müşteri Siparişleri -->
         <div id="step-3-seller" class="step-screen">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2><i class="fa-solid fa-users-viewfinder" style="color:var(--accent-yellow);"></i> Müşteri Siparişleri</h2>
+                <h2><i class="fa-solid fa-truck-field" style="color:var(--accent-yellow);"></i> Satıcı Yönetim Paneli</h2>
                 <button onclick="resetFlow()" style="background:none; border:none; color:var(--text-muted); cursor:pointer;"><i class="fa-solid fa-right-from-bracket"></i> Çıkış</button>
             </div>
 
-            <div id="buyers-list">
-                <!-- Örnek Müşteriler -->
-                <div class="card-item">
-                    <div>
-                        <h3>Mehmet Yılmaz (Alıcı)</h3>
-                        <p style="font-size:12px; color:var(--light-green);">Sipariş: 2 Litre Günlük Süt</p>
-                        <span class="phone-badge"><i class="fa-solid fa-phone"></i> 0544 999 88 77</span>
-                    </div>
-                    <a href="sms:05449998877?body=SütPazarı: Siparişiniz yola çıktı, kapıda olunuz!" class="btn-sms" style="background:var(--accent-yellow); color:#1a202c;">
-                        <i class="fa-solid fa-truck"></i> Yola Çıktım SMS
-                    </a>
+            <!-- Yeni Ürün Ekleme Formu -->
+            <div style="background:var(--card-accent); padding:20px; border-radius:16px; margin-bottom:25px;">
+                <h4 style="margin-bottom:12px; color:var(--light-green);"><i class="fa-solid fa-plus-circle"></i> Yeni Ürün Ekle</h4>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <input type="text" id="new-prod-name" placeholder="Ürün Adı (Örn: Günlük Süt)">
+                    <input type="number" id="new-prod-price" placeholder="Fiyatı TL (Örn: 40)">
                 </div>
-
-                <div class="card-item">
-                    <div>
-                        <h3>Ayşe Kaya (Alıcı)</h3>
-                        <p style="font-size:12px; color:var(--light-green);">Sipariş: 1kg Köy Yoğurdu</p>
-                        <span class="phone-badge"><i class="fa-solid fa-phone"></i> 0555 333 22 11</span>
-                    </div>
-                    <a href="sms:05553332211?body=SütPazarı: Siparişiniz yola çıktı, kapıda olunuz!" class="btn-sms" style="background:var(--accent-yellow); color:#1a202c;">
-                        <i class="fa-solid fa-truck"></i> Yola Çıktım SMS
-                    </a>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <script>
-        let userData = {
-            name: '',
-            phone: '',
-            role: ''
-        };
-
-        function goToStep2() {
-            const name = document.getElementById('input-name').value.trim();
-            const phone = document.getElementById('input-phone').value.trim();
-
-            if (!name || !phone) {
-                alert("Lütfen Ad Soyad ve Telefon numaranızı girin!");
-                return;
-            }
-
-            userData.name = name;
-            userData.phone = phone;
-
-            // Navigasyon Bilgisini Güncelle
-            const nav = document.getElementById('user-nav');
-            nav.style.display = 'block';
-            nav.innerHTML = `<i class="fa-solid fa-user"></i> ${name} (${phone})`;
-
-            showScreen('step-2');
-        }
-
-        function selectRole(role) {
-            userData.role = role;
-            if (role === 'buyer') {
-                showScreen('step-3-buyer');
-            } else {
-                showScreen('step-3-seller');
-            }
-        }
-
-        function showScreen(screenId) {
-            document.querySelectorAll('.step-screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-        }
-
-        function resetFlow() {
-            document.getElementById('input-name').value = '';
-            document.getElementById('input-phone').value = '';
-            document.getElementById('user-nav').style.display = 'none';
-            showScreen('step-1');
-        }
-    </script>
-</body>
-</html>
+                <input type="text" id="new-prod-desc" placeholder="Açıklama (Örn: Taze inek sütü, 1 Litre)" style="margin-top:10px; width:100%; padding:10px; border-radius:10px; background:var(--bg-dark); border:1px solid rgba(255,255,255,0.1); color:white;">
+                <button class="btn-primary" style="margin-top:12px; padding:10px;" onclick="addNewProduct()"><i class="fa-solid fa-plus"></i> Ürünü Kataloğa Ekle</button>
