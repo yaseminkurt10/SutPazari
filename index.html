@@ -34,10 +34,9 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            padding-bottom: 70px;
+            padding-bottom: 75px;
         }
 
-        /* Üst Header */
         header {
             display: flex;
             justify-content: space-between;
@@ -131,12 +130,11 @@
         }
 
         #map {
-            height: 250px;
+            height: 230px;
             width: 100%;
             z-index: 1;
         }
 
-        /* Arama Paneli */
         .search-box {
             position: relative;
             margin-bottom: 15px;
@@ -160,7 +158,6 @@
             color: var(--primary-green);
         }
 
-        /* Kart Yapısı */
         .card-item {
             background: var(--card-dark);
             border-radius: 18px;
@@ -209,7 +206,6 @@
             margin-top: 4px;
         }
 
-        /* Butonlar */
         .btn-primary {
             background: var(--primary-green);
             color: white;
@@ -371,7 +367,6 @@
 </head>
 <body>
 
-    <!-- Header -->
     <header>
         <div class="logo-container">
             <div class="logo-icon"><i class="fa-solid fa-glass-water"></i></div>
@@ -391,19 +386,17 @@
         <!-- 1. SEKME: ALICI PANENİ & SÜTÇÜ LİSTESİ -->
         <div id="tab-buyer" class="tab-content active">
             
-            <!-- Canlı Harita Kartı -->
             <div class="map-card">
                 <div class="map-header">
                     <span><i class="fa-solid fa-location-crosshairs" style="color:var(--light-green);"></i> Canlı Sütçü Konum Takibi</span>
-                    <span id="live-status-badge" style="color:var(--text-muted); font-size:11px;">Konum İzni Bekleniyor</span>
+                    <span id="live-status-badge" style="color:var(--text-muted); font-size:11px;">Konum Alınıyor...</span>
                 </div>
                 <div id="map"></div>
             </div>
 
-            <!-- Sütçü & İl Arama Paneli -->
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="search-input" onkeyup="filterSellers()" placeholder="Sütçü adı veya İl/İlçe ara (Örn: Diyarbakır, Ahmet)...">
+                <input type="text" id="search-input" oninput="filterSellers()" placeholder="Sütçü adı veya İl/İlçe ara (Örn: Diyarbakır, Ahmet)...">
             </div>
 
             <h3 style="margin-bottom:12px; font-size:16px;"><i class="fa-solid fa-store" style="color:var(--primary-green);"></i> Tüm Sütçüler</h3>
@@ -523,7 +516,6 @@
         </button>
     </div>
 
-    <!-- Leaflet Harita JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script>
         let currentUser = {
@@ -580,28 +572,32 @@
                 customerName: "Mehmet Yılmaz",
                 phone: "0544 999 88 77",
                 product: "2 Litre Günlük Süt",
-                status: "Bekliyor" // "Bekliyor", "Yolda", "Teslim Edildi", "İptal Edildi"
+                status: "Bekliyor"
             }
         ];
 
-        window.onload = function() {
+        document.addEventListener("DOMContentLoaded", function() {
             loadProfileFromStorage();
-            initMap();
             renderSellersList(sellers);
             renderOrdersList();
-        };
+            setTimeout(initMap, 200);
+        });
 
         function loadProfileFromStorage() {
-            const saved = localStorage.getItem('sutpazari_user');
-            if (saved) {
-                currentUser = JSON.parse(saved);
-                document.getElementById('header-user-name').innerText = currentUser.name;
-                document.getElementById('modal-input-name').value = currentUser.name;
-                document.getElementById('modal-input-phone').value = currentUser.phone;
-                document.getElementById('modal-input-city').value = currentUser.city || 'Diyarbakır';
-                document.getElementById('modal-input-role').value = currentUser.role;
-            } else {
-                openProfileModal();
+            try {
+                const saved = localStorage.getItem('sutpazari_user');
+                if (saved) {
+                    currentUser = JSON.parse(saved);
+                    document.getElementById('header-user-name').innerText = currentUser.name;
+                    document.getElementById('modal-input-name').value = currentUser.name || '';
+                    document.getElementById('modal-input-phone').value = currentUser.phone || '';
+                    document.getElementById('modal-input-city').value = currentUser.city || 'Diyarbakır';
+                    document.getElementById('modal-input-role').value = currentUser.role || 'buyer';
+                } else {
+                    openProfileModal();
+                }
+            } catch(e) {
+                console.error(e);
             }
         }
 
@@ -633,37 +629,42 @@
         }
 
         function initMap() {
-            map = L.map('map').setView([37.9150, 40.2300], 13);
+            if (map !== null) return;
+            try {
+                map = L.map('map').setView([37.9150, 40.2300], 13);
 
-            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-                attribution: 'Tiles &copy; Esri',
-                maxZoom: 18,
-                referrerPolicy: 'strict-origin-when-cross-origin'
-            }).addTo(map);
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: 'Tiles &copy; Esri',
+                    maxZoom: 18,
+                    referrerPolicy: 'strict-origin-when-cross-origin'
+                }).addTo(map);
 
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        map.setView([lat, lng], 14);
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const lat = position.coords.latitude;
+                            const lng = position.coords.longitude;
+                            map.setView([lat, lng], 14);
 
-                        userMarker = L.marker([lat, lng]).addTo(map)
-                            .bindPopup('<b>Sizin Konumunuz</b>').openPopup();
+                            userMarker = L.marker([lat, lng]).addTo(map)
+                                .bindPopup('<b>Sizin Konumunuz</b>');
 
-                        document.getElementById('live-status-badge').innerText = "Canlı Konum Aktif";
-                        document.getElementById('live-status-badge').style.color = "var(--light-green)";
-                    },
-                    () => {
-                        document.getElementById('live-status-badge').innerText = "Varsayılan Konum Gösteriliyor";
-                    }
-                );
+                            document.getElementById('live-status-badge').innerText = "Canlı Konum Aktif";
+                            document.getElementById('live-status-badge').style.color = "var(--light-green)";
+                        },
+                        () => {
+                            document.getElementById('live-status-badge').innerText = "Varsayılan Konum";
+                        }
+                    );
+                }
+
+                sellers.forEach(s => {
+                    L.marker([s.lat, s.lng]).addTo(map)
+                        .bindPopup(`<b>${s.name}</b><br>Tel: ${s.phone}<br>Şehir: ${s.city}`);
+                });
+            } catch(err) {
+                console.error("Harita yükleme hatası:", err);
             }
-
-            sellers.forEach(s => {
-                L.marker([s.lat, s.lng]).addTo(map)
-                    .bindPopup(`<b>${s.name}</b><br>Tel: ${s.phone}<br>Şehir: ${s.city}`);
-            });
         }
 
         function switchTab(tabId) {
@@ -674,7 +675,7 @@
 
             if (tabId === 'tab-buyer') {
                 document.getElementById('nav-buyer').classList.add('active');
-                setTimeout(() => map && map.invalidateSize(), 300);
+                if (map) setTimeout(() => map.invalidateSize(), 200);
             } else if (tabId === 'tab-seller-dashboard') {
                 document.getElementById('nav-seller').classList.add('active');
                 renderSellerMyProducts();
@@ -690,7 +691,6 @@
             switchTab('tab-seller-dashboard');
         }
 
-        /* Arama & Filtreleme */
         function filterSellers() {
             const query = document.getElementById('search-input').value.toLowerCase();
             const filtered = sellers.filter(s => 
@@ -702,6 +702,7 @@
 
         function renderSellersList(listToRender) {
             const container = document.getElementById('sellers-list');
+            if (!container) return;
             container.innerHTML = '';
 
             if (listToRender.length === 0) {
@@ -829,6 +830,7 @@
 
         function renderSellerMyProducts() {
             const container = document.getElementById('seller-my-products');
+            if (!container) return;
             container.innerHTML = '';
 
             sellers[0].products.forEach(p => {
@@ -845,9 +847,9 @@
             });
         }
 
-        /* Sipariş İptali ve Teslim Edildi İşlemleri */
         function renderOrdersList() {
             const container = document.getElementById('buyers-orders-list');
+            if (!container) return;
             container.innerHTML = '';
 
             orders.forEach(o => {
@@ -870,54 +872,4 @@
                         </div>
 
                         ${o.status !== "Teslim Edildi" && o.status !== "İptal Edildi" ? `
-                            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
-                                <button class="btn-primary" style="background:var(--accent-yellow); color:#1a202c; flex:1;" onclick="startDeliveryAnimation(\${o.id})">
-                                    <i class="fa-solid fa-motorcycle"></i> Dağıtıma Çık
-                                </button>
-                                <button class="btn-success" onclick="markAsDelivered(\${o.id})">
-                                    <i class="fa-solid fa-circle-check"></i> Teslim Edildi
-                                </button>
-                                <button class="btn-danger" onclick="cancelOrder(\${o.id})">
-                                    <i class="fa-solid fa-xmark"></i> İptal Et
-                                </button>
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
-            });
-        }
-
-        function markAsDelivered(orderId) {
-            const order = orders.find(o => o.id === orderId);
-            if (order) {
-                order.status = "Teslim Edildi";
-                alert("Sipariş başarıyla teslim edildi olarak güncellendi! 🥛✅");
-                renderOrdersList();
-            }
-        }
-
-        function cancelOrder(orderId) {
-            if (confirm("Bu siparişi iptal etmek istediğinize emin misiniz?")) {
-                const order = orders.find(o => o.id === orderId);
-                if (order) {
-                    order.status = "İptal Edildi";
-                    alert("Sipariş iptal edildi. ❌");
-                    renderOrdersList();
-                }
-            }
-        }
-
-        function startDeliveryAnimation(orderId) {
-            const order = orders.find(o => o.id === orderId);
-            if (order) order.status = "Yolda";
-            renderOrdersList();
-
-            switchTab('tab-buyer');
-            alert("Dağıtım başlatıldı! Sütçü adrese doğru yola çıktı. 🛵");
-
-            let startLat = 37.9150;
-            let startLng = 40.2300;
-            let targetLat = 37.9250;
-            let targetLng = 40.2400;
-
-            if (sellerMarker) map
+                            <div style="margin-top:12px; display:flex;
