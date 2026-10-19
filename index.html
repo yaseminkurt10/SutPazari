@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html lang="tr" class="notranslate" translate="no">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="google" content="notranslate" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SütPazarı — Tazeliğin En Doğal Hali</title>
     <!-- FontAwesome İkonları -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Leaflet.js Harita CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
     <style>
         :root {
             --bg-dark: #121c17;
@@ -35,9 +34,10 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            padding-bottom: 75px;
+            padding-bottom: 70px; /* Alt Navigasyon için alan */
         }
 
+        /* Üst Header */
         header {
             display: flex;
             justify-content: space-between;
@@ -95,6 +95,7 @@
             gap: 6px;
         }
 
+        /* Ana Konteyner */
         .container {
             width: 92%;
             max-width: 700px;
@@ -102,6 +103,7 @@
             flex: 1;
         }
 
+        /* Sekmeler (Tab Content) */
         .tab-content {
             display: none;
         }
@@ -110,6 +112,7 @@
             display: block;
         }
 
+        /* Harita Kartı */
         .map-card {
             background: var(--card-dark);
             border-radius: 20px;
@@ -130,12 +133,12 @@
         }
 
         #map {
-            height: 230px;
+            height: 250px;
             width: 100%;
             z-index: 1;
-            background: #121c17;
         }
 
+        /* Kart Yapısı */
         .card-item {
             background: var(--card-dark);
             border-radius: 18px;
@@ -143,6 +146,10 @@
             margin-bottom: 15px;
             border: 1px solid rgba(255, 255, 255, 0.05);
             transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .card-item:hover {
+            border-color: rgba(56, 161, 105, 0.5);
         }
 
         .phone-badge {
@@ -169,21 +176,13 @@
             margin-left: 6px;
         }
 
-        .city-badge {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-light);
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
         .rating-stars {
             color: var(--accent-yellow);
             font-size: 13px;
             margin-top: 4px;
         }
 
+        /* Butonlar */
         .btn-primary {
             background: var(--primary-green);
             color: white;
@@ -198,34 +197,11 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            transition: background 0.2s;
         }
 
-        .btn-danger {
-            background: var(--danger-red);
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 10px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .btn-success {
-            background: #2b6cb0;
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 10px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
+        .btn-primary:hover {
+            background: #2f855a;
         }
 
         .btn-sms {
@@ -240,8 +216,10 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            cursor: pointer;
         }
 
+        /* Ürün Izgarası */
         .product-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -260,6 +238,7 @@
             justify-content: space-between;
         }
 
+        /* Modal (Açılır Pencere) */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -285,6 +264,7 @@
             max-width: 420px;
             padding: 25px;
             border: 1px solid rgba(56, 161, 105, 0.4);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
         }
 
         .form-group {
@@ -308,6 +288,7 @@
             font-size: 14px;
         }
 
+        /* Alt Sabit Navigasyon Barı */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -345,6 +326,7 @@
 </head>
 <body>
 
+    <!-- Header -->
     <header>
         <div class="logo-container">
             <div class="logo-icon"><i class="fa-solid fa-glass-water"></i></div>
@@ -359,24 +341,26 @@
         </button>
     </header>
 
+    <!-- Ana Konteyner -->
     <div class="container">
 
-        <!-- 1. SEKME: ALICI PANELI & SÜTÇÜ LİSTESİ -->
+        <!-- 1. SEKME: ALICI PANENİ & SÜTÇÜ LİSTESİ -->
         <div id="tab-buyer" class="tab-content active">
             
+            <!-- Canlı Harita Kartı -->
             <div class="map-card">
                 <div class="map-header">
                     <span><i class="fa-solid fa-location-crosshairs" style="color:var(--light-green);"></i> Canlı Sütçü Konum Takibi</span>
-                    <span id="live-status-badge" style="color:var(--text-muted); font-size:11px;">Aktif</span>
+                    <span id="live-status-badge" style="color:var(--text-muted); font-size:11px;">Konum İzni Bekleniyor</span>
                 </div>
                 <div id="map"></div>
             </div>
 
-            <h3 style="margin-bottom:12px; font-size:16px;"><i class="fa-solid fa-store" style="color:var(--primary-green);"></i> Bulunduğunuz İldeki Tüm Sütçüler</h3>
+            <h3 style="margin-bottom:12px; font-size:16px;"><i class="fa-solid fa-store" style="color:var(--primary-green);"></i> Yakındaki Sütçüler</h3>
             <div id="sellers-list"></div>
         </div>
 
-        <!-- 2. SEKME: SATICI DETAY SAYFASI -->
+        <!-- 2. SEKME: SATICI DETAY SAYFASI (ALICI İÇİN) -->
         <div id="tab-seller-detail" class="tab-content">
             <button onclick="switchTab('tab-buyer')" style="background:none; border:none; color:var(--text-muted); cursor:pointer; margin-bottom:15px; font-size:13px; display:flex; align-items:center; gap:6px;">
                 <i class="fa-solid fa-arrow-left"></i> Sütçülere Dön
@@ -384,6 +368,7 @@
 
             <div id="seller-detail-content"></div>
 
+            <!-- Yıldızlı Yorum Formu -->
             <div style="background: var(--card-dark); padding:20px; border-radius:18px; margin-top:20px; border:1px solid rgba(255,255,255,0.05);">
                 <h4 style="margin-bottom:10px; font-size:15px;"><i class="fa-solid fa-star" style="color:var(--accent-yellow);"></i> Satıcıyı Değerlendir</h4>
                 <div class="form-group">
@@ -457,11 +442,6 @@
             </div>
 
             <div class="form-group">
-                <label>Bulunduğunuz İl / İlçe</label>
-                <input type="text" id="modal-input-city" placeholder="Örn: Diyarbakır / Kayapınar">
-            </div>
-
-            <div class="form-group">
                 <label>Rolünüz</label>
                 <select id="modal-input-role">
                     <option value="buyer">Süt Alıcısı (Müşteri)</option>
@@ -489,12 +469,13 @@
         </button>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet Harita JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script>
+        // Uygulama Durumu (State)
         let currentUser = {
             name: '',
             phone: '',
-            city: 'Diyarbakır',
             role: 'buyer'
         };
 
@@ -504,12 +485,12 @@
         let userMarker = null;
         let animationInterval = null;
 
+        // Örnek Satıcı Veritabanı
         let sellers = [
             {
                 id: 1,
                 name: "Ahmet Sütçü (Köy Sütçüsü)",
                 phone: "0532 111 22 33",
-                city: "Diyarbakır / Kayapınar",
                 rating: 4.9,
                 lat: 37.9150,
                 lng: 40.2300,
@@ -525,7 +506,6 @@
                 id: 2,
                 name: "Mehmet Dağıtım",
                 phone: "0544 888 77 66",
-                city: "Diyarbakır / Bağlar",
                 rating: 4.7,
                 lat: 37.9200,
                 lng: 40.2200,
@@ -539,38 +519,25 @@
             }
         ];
 
-        let orders = [
-            {
-                id: 501,
-                customerName: "Mehmet Yılmaz",
-                phone: "0544 999 88 77",
-                product: "2 Litre Günlük Süt",
-                status: "Bekliyor"
-            }
-        ];
-
-        window.addEventListener('DOMContentLoaded', () => {
+        // Sayfa Yüklendiğinde
+        window.onload = function() {
             loadProfileFromStorage();
-            renderSellersList(sellers);
+            initMap();
+            renderSellersList();
             renderOrdersList();
-            setTimeout(initMap, 300);
-        });
+        };
 
+        // Profil Yükleme
         function loadProfileFromStorage() {
-            try {
-                const saved = localStorage.getItem('sutpazari_user');
-                if (saved) {
-                    currentUser = JSON.parse(saved);
-                    document.getElementById('header-user-name').innerText = currentUser.name || 'Giriş Yap';
-                    document.getElementById('modal-input-name').value = currentUser.name || '';
-                    document.getElementById('modal-input-phone').value = currentUser.phone || '';
-                    document.getElementById('modal-input-city').value = currentUser.city || 'Diyarbakır';
-                    document.getElementById('modal-input-role').value = currentUser.role || 'buyer';
-                } else {
-                    openProfileModal();
-                }
-            } catch(e) {
-                console.error(e);
+            const saved = localStorage.getItem('sutpazari_user');
+            if (saved) {
+                currentUser = JSON.parse(saved);
+                document.getElementById('header-user-name').innerText = currentUser.name;
+                document.getElementById('modal-input-name').value = currentUser.name;
+                document.getElementById('modal-input-phone').value = currentUser.phone;
+                document.getElementById('modal-input-role').value = currentUser.role;
+            } else {
+                openProfileModal();
             }
         }
 
@@ -581,7 +548,6 @@
         function saveProfile() {
             const name = document.getElementById('modal-input-name').value.trim();
             const phone = document.getElementById('modal-input-phone').value.trim();
-            const city = document.getElementById('modal-input-city').value.trim();
             const role = document.getElementById('modal-input-role').value;
 
             if (!name || !phone) {
@@ -589,7 +555,7 @@
                 return;
             }
 
-            currentUser = { name, phone, city: city || 'Diyarbakır', role };
+            currentUser = { name, phone, role };
             localStorage.setItem('sutpazari_user', JSON.stringify(currentUser));
             document.getElementById('header-user-name').innerText = name;
             document.getElementById('profile-modal').classList.remove('active');
@@ -601,32 +567,45 @@
             }
         }
 
+        // Harita Başlatma (403 Hata Korumalı Esri & CartoDB Katmanları)
         function initMap() {
-            if (map !== null) return;
-            const mapContainer = document.getElementById('map');
-            if (!mapContainer) return;
+            map = L.map('map').setView([37.9150, 40.2300], 13);
 
-            try {
-                map = L.map('map', {
-                    center: [37.9150, 40.2300],
-                    zoom: 13,
-                    zoomControl: false
-                });
+            // Esri World Street Map (403 Verme Riski Yoktur)
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri',
+                maxZoom: 18,
+                referrerPolicy: 'strict-origin-when-cross-origin'
+            }).addTo(map);
 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 18,
-                    attribution: 'OpenStreetMap'
-                }).addTo(map);
+            // Kullanıcı Konumu İsteği
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        map.setView([lat, lng], 14);
 
-                sellers.forEach(s => {
-                    L.marker([s.lat, s.lng]).addTo(map)
-                        .bindPopup(`<b>${s.name}</b><br>Tel: ${s.phone}<br>Şehir: ${s.city}`);
-                });
-            } catch(err) {
-                console.log("Harita hatası:", err);
+                        userMarker = L.marker([lat, lng]).addTo(map)
+                            .bindPopup('<b>Sizin Konumunuz</b>').openPopup();
+
+                        document.getElementById('live-status-badge').innerText = "Canlı Konum Aktif";
+                        document.getElementById('live-status-badge').style.color = "var(--light-green)";
+                    },
+                    () => {
+                        document.getElementById('live-status-badge').innerText = "Varsayılan Konum Gösteriliyor";
+                    }
+                );
             }
+
+            // Satıcı Simgelerini Haritaya Ekle
+            sellers.forEach(s => {
+                L.marker([s.lat, s.lng]).addTo(map)
+                    .bindPopup(`<b>${s.name}</b><br>Tel: ${s.phone}<br>⭐ ${s.rating}`);
+            });
         }
 
+        // Sekme Değiştirme
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -635,7 +614,7 @@
 
             if (tabId === 'tab-buyer') {
                 document.getElementById('nav-buyer').classList.add('active');
-                if (map) setTimeout(() => map.invalidateSize(), 200);
+                setTimeout(() => map && map.invalidateSize(), 300);
             } else if (tabId === 'tab-seller-dashboard') {
                 document.getElementById('nav-seller').classList.add('active');
                 renderSellerMyProducts();
@@ -651,12 +630,12 @@
             switchTab('tab-seller-dashboard');
         }
 
-        function renderSellersList(listToRender) {
+        // Satıcı Listesini Ekrana Basma
+        function renderSellersList() {
             const container = document.getElementById('sellers-list');
-            if (!container) return;
             container.innerHTML = '';
 
-            listToRender.forEach(s => {
+            sellers.forEach(s => {
                 let totalStock = s.products.reduce((acc, p) => acc + p.stock, 0);
 
                 container.innerHTML += `
@@ -666,8 +645,7 @@
                                 <h3 style="font-size:16px;">${s.name}</h3>
                                 <div class="rating-stars">⭐ ${s.rating} / 5 (${s.reviews.length} Değerlendirme)</div>
                                 <span class="phone-badge"><i class="fa-solid fa-phone"></i> ${s.phone}</span>
-                                <span class="city-badge"><i class="fa-solid fa-location-dot"></i> ${s.city}</span>
-                                <span class="stock-badge"><i class="fa-solid fa-cubes"></i> Stok: ${totalStock} Litre/Kg</span>
+                                <span class="stock-badge"><i class="fa-solid fa-cubes"></i> Toplam Stok: ${totalStock} Litre/Kg</span>
                             </div>
                             <i class="fa-solid fa-chevron-right" style="color:var(--text-muted); margin-top:10px;"></i>
                         </div>
@@ -676,6 +654,7 @@
             });
         }
 
+        // Satıcı Detay Profili Açma
         function openSellerDetail(sellerId) {
             activeSellerDetailId = sellerId;
             const seller = sellers.find(s => s.id === sellerId);
@@ -709,7 +688,6 @@
                 <div class="card-item" style="border-color:var(--primary-green);">
                     <h2 style="font-size:18px;">${seller.name}</h2>
                     <span class="phone-badge" style="margin-top:8px;"><i class="fa-solid fa-phone"></i> ${seller.phone}</span>
-                    <span class="city-badge"><i class="fa-solid fa-location-dot"></i> ${seller.city}</span>
                     <div class="rating-stars" style="margin-top:6px;">⭐ Ortalama Puan: ${seller.rating} / 5</div>
                 </div>
 
@@ -723,6 +701,7 @@
             switchTab('tab-seller-detail');
         }
 
+        // Değerlendirme Gönderme
         function submitReview() {
             if (!activeSellerDetailId) return;
             const seller = sellers.find(s => s.id === activeSellerDetailId);
@@ -745,6 +724,7 @@
             openSellerDetail(activeSellerDetailId);
         }
 
+        // Satıcı Tarafı: Yeni Ürün Ekleme
         function addNewProduct() {
             const name = document.getElementById('new-prod-name').value.trim();
             const price = parseFloat(document.getElementById('new-prod-price').value);
@@ -756,6 +736,7 @@
                 return;
             }
 
+            // Varsayılan Satıcıya Ürün Ekle
             sellers[0].products.push({
                 id: Date.now(),
                 name: name,
@@ -771,12 +752,11 @@
 
             alert("Yeni ürün kataloğunuza başarıyla eklendi! ✅");
             renderSellerMyProducts();
-            renderSellersList(sellers);
+            renderSellersList();
         }
 
         function renderSellerMyProducts() {
             const container = document.getElementById('seller-my-products');
-            if (!container) return;
             container.innerHTML = '';
 
             sellers[0].products.forEach(p => {
@@ -793,103 +773,58 @@
             });
         }
 
+        // Satıcı Tarafı: Müşteri Siparişleri ve Canlı Dağıtım
         function renderOrdersList() {
             const container = document.getElementById('buyers-orders-list');
-            if (!container) return;
-            container.innerHTML = '';
-
-            orders.forEach(o => {
-                let statusBadge = `<span style="color:var(--accent-yellow); font-size:12px; font-weight:bold;">${o.status}</span>`;
-                if (o.status === "Teslim Edildi") {
-                    statusBadge = `<span style="color:var(--light-green); font-size:12px; font-weight:bold;">✅ Teslim Edildi 🥛</span>`;
-                } else if (o.status === "İptal Edildi") {
-                    statusBadge = `<span style="color:var(--danger-red); font-size:12px; font-weight:bold;">❌ İptal Edildi</span>`;
-                }
-
-                container.innerHTML += `
-                    <div class="card-item">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div>
-                                <h3 style="font-size:15px;">${o.customerName}</h3>
-                                <p style="font-size:12px; color:var(--light-green); margin:4px 0;">Sipariş: ${o.product}</p>
-                                <span class="phone-badge"><i class="fa-solid fa-phone"></i> ${o.phone}</span>
-                            </div>
-                            <div>${statusBadge}</div>
-                        </div>
-
-                        ${o.status !== "Teslim Edildi" && o.status !== "İptal Edildi" ? `
-                            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
-                                <button class="btn-primary" style="background:var(--accent-yellow); color:#1a202c; flex:1;" onclick="startDeliveryAnimation(\${o.id})">
-                                    <i class="fa-solid fa-motorcycle"></i> Dağıtıma Çık
-                                </button>
-                                <button class="btn-success" onclick="markAsDelivered(\${o.id})">
-                                    <i class="fa-solid fa-circle-check"></i> Teslim Edildi
-                                </button>
-                                <button class="btn-danger" onclick="cancelOrder(\${o.id})">
-                                    <i class="fa-solid fa-xmark"></i> İptal Et
-                                </button>
-                            </div>
-                        ` : ''}
+            container.innerHTML = `
+                <div class="card-item">
+                    <div>
+                        <h3 style="font-size:15px;">Mehmet Yılmaz</h3>
+                        <p style="font-size:12px; color:var(--light-green); margin:4px 0;">Sipariş: 2 Litre Günlük Süt</p>
+                        <span class="phone-badge"><i class="fa-solid fa-phone"></i> 0544 999 88 77</span>
                     </div>
-                `;
-            });
+                    <div style="margin-top:12px; display:flex; gap:8px;">
+                        <button class="btn-primary" style="background:var(--accent-yellow); color:#1a202c;" onclick="startDeliveryAnimation()">
+                            <i class="fa-solid fa-motorcycle"></i> Canlı Dağıtıma Başla
+                        </button>
+                        <a href="sms:05449998877?body=SütPazarı: Siparişiniz yola çıktı, kapıda olunuz!" class="btn-sms">
+                            <i class="fa-solid fa-comment-sms"></i> SMS
+                        </a>
+                    </div>
+                </div>
+            `;
         }
 
-        function markAsDelivered(orderId) {
-            const order = orders.find(o => o.id === orderId);
-            if (order) {
-                order.status = "Teslim Edildi";
-                alert("Sipariş başarıyla teslim edildi olarak güncellendi! 🥛✅");
-                renderOrdersList();
-            }
-        }
-
-        function cancelOrder(orderId) {
-            if (confirm("Bu siparişi iptal etmek istediğinize emin misiniz?")) {
-                const order = orders.find(o => o.id === orderId);
-                if (order) {
-                    order.status = "İptal Edildi";
-                    alert("Sipariş iptal edildi. ❌");
-                    renderOrdersList();
-                }
-            }
-        }
-
-        function startDeliveryAnimation(orderId) {
-            const order = orders.find(o => o.id === orderId);
-            if (order) order.status = "Yolda";
-            renderOrdersList();
-
+        // Canlı Dağıtım Harita Animasyonu
+        function startDeliveryAnimation() {
             switchTab('tab-buyer');
-            alert("Dağıtım başlatıldı! Sütçü adrese doğru yola çıktı. 🛵");
+            alert("Dağıtım başlatıldı! Harita üzerinde sütçü canlı olarak adrese ilerliyor. 🛵");
 
             let startLat = 37.9150;
             let startLng = 40.2300;
             let targetLat = 37.9250;
-            let targetLng =40.2400;
+            let targetLng = 40.2400;
 
-            if (sellerMarker && map) map.removeLayer(sellerMarker);
+            if (sellerMarker) map.removeLayer(sellerMarker);
 
-            if (map) {
-                sellerMarker = L.marker([startLat, startLng]).addTo(map)
-                    .bindPopup('<b>Sütçü Yolda! 🛵</b>').openPopup();
+            sellerMarker = L.marker([startLat, startLng]).addTo(map)
+                .bindPopup('<b>Sütçü Yolda! 🛵</b>').openPopup();
 
-                let steps = 0;
-                if (animationInterval) clearInterval(animationInterval);
+            let steps = 0;
+            if (animationInterval) clearInterval(animationInterval);
 
-                animationInterval = setInterval(() => {
-                    steps++;
-                    let currentLat = startLat + (targetLat - startLat) * (steps / 50);
-                    let currentLng = startLng + (targetLng - startLng) * (steps / 50);
+            animationInterval = setInterval(() => {
+                steps++;
+                let currentLat = startLat + (targetLat - startLat) * (steps / 50);
+                let currentLng = startLng + (targetLng - startLng) * (steps / 50);
 
-                    sellerMarker.setLatLng([currentLat, currentLng]);
+                sellerMarker.setLatLng([currentLat, currentLng]);
 
-                    if (steps >= 50) {
-                        clearInterval(animationInterval);
-                        sellerMarker.bindPopup('<b>Sütçü Kapıda! 🥛</b>').openPopup();
-                    }
-                }, 300);
-            }
+                if (steps >= 50) {
+                    clearInterval(animationInterval);
+                    sellerMarker.bindPopup('<b>Sütçü Kapıda! 🥛</b>').openPopup();
+                }
+            }, 300);
         }
     </script>
 </body>
